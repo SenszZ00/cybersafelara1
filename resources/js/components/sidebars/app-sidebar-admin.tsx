@@ -10,19 +10,44 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { reports, dashboard, articles, report_log, messages } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
-import AppLogo from './app-logo';
+import { BookOpen, Folder, LayoutGrid, Newspaper, ClipboardList, History, Inbox} from 'lucide-react';
+import AppLogo from '../app-logo';
 
 const mainNavItems: NavItem[] = [
+    // {
+    //     title: 'Dashboard',
+    //     href: dashboard(),
+    //     icon: LayoutGrid,
+    // },
+
     {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
+        title: 'Submitted Articles',
+        href: articles(),
+        icon: Newspaper,
+    },
+
+    {
+        title: 'Submitted Reports',
+        href: reports(),
+        icon: ClipboardList,
+    },
+
+    {
+        title: 'Report Log',
+        href: report_log(),
+        icon: History,
+    },
+
+    {
+        title: 'Messages',
+        href: messages(),
+        icon: Inbox,
     },
 ];
+
 
 const footerNavItems: NavItem[] = [
     {
@@ -37,7 +62,7 @@ const footerNavItems: NavItem[] = [
     },
 ];
 
-export function AppSidebar() {
+export function AppSidebarAdmin() {
     // ✅ Define a light type for your page props
     const page = usePage<{ auth?: { user?: { username?: string } } }>();
     const user = page.props.auth?.user;

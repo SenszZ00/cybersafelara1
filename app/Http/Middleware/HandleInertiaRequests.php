@@ -56,7 +56,7 @@ class HandleInertiaRequests extends Middleware
                     'username' => $request->user()->username,
                     'email' => $request->user()->email,
                     'avatar' => $request->user()->avatar ?? null,
-                    // 'role' => $request->user()->role, // important for sidebar logic
+                    'role' => $request->user()->role, // important for sidebar logic
                     'email_verified_at' => $request->user()->email_verified_at,
                     'two_factor_enabled' => $request->user()->two_factor_enabled ?? false,
                     'created_at' => $request->user()->created_at,

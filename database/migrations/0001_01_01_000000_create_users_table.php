@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('username')->unique(); // Added for login by username
             $table->string('name')->nullable(); // Keep for Laravel dashboard compatibility
             $table->string('email')->unique();
+            $table->string('role')->default('user');
             $table->timestamp('email_verified_at')->nullable(); // Required by Laravel Auth
             $table->string('password', 255);
 

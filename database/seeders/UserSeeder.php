@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
             'email' => 'admin@gmail.com',
             'password' => Hash::make('admin123'),
             'college_department_id' => null, // no department
-            // 'role' => 'admin',
+            'role' => 'admin',
             'date_joined' => now(),
             'created_at' => now(),
             'updated_at' => now(),
@@ -36,7 +36,7 @@ class UserSeeder extends Seeder
                 'email' => "itp" . ($index + 1) . "@gmail.com",
                 'password' => Hash::make('itp123'),
                 'college_department_id' => $dept->id, // link to department
-                // 'role' => 'it',
+                'role' => 'it',
                 'date_joined' => now(),
                 'created_at' => now(),
                 'updated_at' => now(),
