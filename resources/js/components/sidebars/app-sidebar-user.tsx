@@ -10,7 +10,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { reports, dashboard, articles, report_log, messages } from '@/routes';
+import { my_reports, my_articles, articles, } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Newspaper, ClipboardList, History, Inbox} from 'lucide-react';
@@ -24,14 +24,20 @@ const mainNavItems: NavItem[] = [
     // },
 
     {
-        title: 'Submitted Articles',
+        title: 'Public Articles',
         href: articles(),
         icon: Newspaper,
     },
 
     {
-        title: 'Submitted Reports',
-        href: reports(),
+        title: 'My Articles',
+        href: my_articles(),
+        icon: Newspaper,
+    },
+
+    {
+        title: 'My Reports',
+        href: my_reports(),
         icon: ClipboardList,
     },
 
@@ -73,7 +79,7 @@ export function AppSidebarUser() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href={my_articles()} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

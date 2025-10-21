@@ -14,21 +14,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('articles', function () {
-        return Inertia::render('admin/articles');
-    })->name('articles');
+    Route::get('admin_articles', function () {
+        return Inertia::render('admin/admin_articles');
+    })->name('admin_articles');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('reports', function () {
-        return Inertia::render('admin/reports');
-    })->name('reports');
+    Route::get('admin_reports', function () {
+        return Inertia::render('admin/admin_reports');
+    })->name('admin_reports');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('report_log', function () {
-        return Inertia::render('admin/report_log');
-    })->name('report_log');
+    Route::get('admin_report_log', function () {
+        return Inertia::render('admin/admin_report_log');
+    })->name('admin_report_log');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -37,6 +37,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('messages');
 });
 
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('it_report_log', function () {
+        return Inertia::render('it/it-report_log');
+    })->name('it_report_log');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('it_reports', function () {
+        return Inertia::render('it/it-reports');
+    })->name('it_reports');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('articles', function () {
+        return Inertia::render('user/articles');
+    })->name('articles');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('my_articles', function () {
+        return Inertia::render('user/my_articles');
+    })->name('my_articles');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('my_reports', function () {
+        return Inertia::render('user/my_reports');
+    })->name('my_reports');
+});
 
 
 require __DIR__.'/settings.php';

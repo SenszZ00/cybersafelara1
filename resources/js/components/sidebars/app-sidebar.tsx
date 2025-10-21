@@ -10,7 +10,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { reports, dashboard, articles, report_log, messages } from '@/routes';
+import { my_reports, dashboard, articles, it_report_log, messages } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Newspaper, ClipboardList, History, Inbox} from 'lucide-react';
@@ -31,13 +31,13 @@ const mainNavItems: NavItem[] = [
 
     {
         title: 'Submitted Reports',
-        href: reports(),
+        href: my_reports(),
         icon: ClipboardList,
     },
 
     {
         title: 'Report Log',
-        href: report_log(),
+        href: it_report_log(),
         icon: History,
     },
 

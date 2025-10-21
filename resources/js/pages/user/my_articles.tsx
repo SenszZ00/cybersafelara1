@@ -1,17 +1,17 @@
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
-import { articles } from '@/routes';
+import { my_articles } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Submitted Articles',
-        href: articles().url,
+        title: 'My Articles',
+        href: my_articles().url,
     },
 ];
 
-export default function SubmittedArticles() {
+export default function MyArticles() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
