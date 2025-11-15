@@ -1,19 +1,16 @@
 <?php
 
-
 namespace Database\Seeders;
 
-
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\ArticleStatus;
 
-
-class ArticleStatusSeeder extends Seeder {
-    public function run(): void {
-        DB::table('article_statuses')->insert([
-            ['name' => 'pending'],
-            ['name' => 'approved'],
-            ['name' => 'rejected'],
-        ]);
+class ArticleStatusSeeder extends Seeder
+{
+    public function run()
+    {
+        ArticleStatus::create(['name' => 'pending']);
+        ArticleStatus::create(['name' => 'approved']);
+        ArticleStatus::create(['name' => 'rejected']);
     }
 }

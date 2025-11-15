@@ -1,35 +1,37 @@
 <?php
 
-
 namespace App\Models;
-
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
 class ReportLog extends Model
 {
-    /** @use HasFactory<\Database\Factories\ReportLogFactory> */
     use HasFactory;
+
+    protected $primaryKey = 'log_id';
+    
     protected $fillable = [
         'report_id',
-        'user_id',
-        'action',
-        'notes',
+        'incident_type',
+        'resolution_details',
+        'status',
+        'it_personnel_id',
     ];
-   
-    // 🔹 Relationship with Report
+
+    protected $casts = [
+        'status' => 'string',
+    ];
+
+    // Relationship with Report
     public function report()
     {
         return $this->belongsTo(Report::class, 'report_id');
     }
-   
-    // 🔹 Relationship with User
-    public function user()
+
+    // Relationship with IT Personnel
+    public function itPersonnel()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'it_personnel_id');
     }
-
-
 }

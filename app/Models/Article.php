@@ -1,35 +1,37 @@
 <?php
 
-
 namespace App\Models;
-
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
 class Article extends Model
 {
-    /** @use HasFactory<\Database\Factories\ArticleFactory> ..*/
     use HasFactory;
 
+    protected $primaryKey = 'article_id';
 
     protected $fillable = [
+        'user_id',
+        'category_id',
+        'article_status_id', 
         'title',
         'content',
-        'user_id',
-        'article_status_id',
+        'keyword',
     ];
 
-
-    // 🔹 Relationship with User (Author)
-    public function status() {
-        return $this->belongsTo(ArticleStatus::class, 'article_status_id');
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function category()
+    {
+        return $this->belongsTo(ArticleCategory::class, 'category_id');
+    }
 
-    // 🔹 Relationship with User (Author)
-    public function author() {
-        return $this->belongsTo(User::class, 'user_id');
+    public function articleStatus()
+    {
+        return $this->belongsTo(ArticleStatus::class, 'article_status_id');
     }
 }

@@ -13,7 +13,6 @@ return new class extends Migration {
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade')->onUpdate('cascade');
             $table->string('subject');
             $table->text('content');
-            $table->timestamp('submitted_at')->useCurrent();
             $table->timestamps();
         });
     }

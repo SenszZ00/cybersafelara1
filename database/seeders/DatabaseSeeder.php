@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             ReportStatusSeeder::class,
             ArticleStatusSeeder::class,
             UserSeeder::class,
+            ArticleCategorySeeder::class,
         ]);
     }
 }

@@ -10,16 +10,33 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('articles', function (Blueprint $table) {
             $table->id('article_id');
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null')->onUpdate('cascade');
+            
+            // Relation to users table
+            $table->foreignId('user_id')
+                ->nullable()
+                ->constrained('users')
+                ->onDelete('set null')
+                ->onUpdate('cascade');
+
+            // Relation to article_categories table
+            $table->foreignId('category_id')
+                ->nullable()
+                ->constrained('article_categories')
+                ->onDelete('set null')
+                ->onUpdate('cascade');
+
+            $table->foreignId('article_status_id')
+                ->default(1) // 1 = pending
+                ->constrained('article_statuses')
+                ->onDelete('restrict')
+                ->onUpdate('cascade');
+
             $table->string('title');
             $table->text('content');
-            $table->string('category')->nullable();
             $table->string('keyword')->nullable();
-            $table->enum('status', ['pending', 'rejected', 'approved'])->default('pending');
             $table->timestamps();
         });
     }
-
 
     public function down(): void {
         Schema::dropIfExists('articles');

@@ -13,7 +13,10 @@ return new class extends Migration {
 
 
             // Foreign key to reports table
-            $table->foreignId('report_id')->constrained('reports')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignId('report_id')
+                  ->constrained('reports', 'report_id')
+                  ->onDelete('cascade')
+                  ->onUpdate('cascade');
 
 
             $table->string('incident_type');
@@ -22,7 +25,11 @@ return new class extends Migration {
 
 
             // Foreign key to users table (IT personnel)
-            $table->foreignId('it_personnel_id')->nullable()->constrained('users')->onDelete('set null')->onUpdate('cascade');
+            $table->foreignId('it_personnel_id')
+                    ->nullable()
+                    ->constrained('users')
+                    ->onDelete('set null')
+                    ->onUpdate('cascade');
 
 
             $table->timestamps();
