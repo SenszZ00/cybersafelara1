@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { useState } from 'react';
 
+
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Submitted Articles',
@@ -13,50 +14,89 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
+
 interface Article {
   article_id: number;
   title: string;
   category: string;
-  username: string
+  username: string;
   user_id: string;
   created_at: string;
+  updated_at: string;
   status: string;
-  published_at?: string | null;
   content?: string;
-  author?: { // Assuming you might have author details
-    name?: string;
-    email?: string;
-  };
 }
+
 
 export default function SubmittedArticles({ articles }: { articles: any[] }) {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   const openModal = (article: Article) => {
     setSelectedArticle(article);
     setIsModalOpen(true);
   };
 
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedArticle(null);
   };
 
+
   const handleApprove = (articleId: number) => {
-    // Add your approve logic here
-    console.log('Approving article:', articleId);
+    // Use router.visit for Inertia compatibility
+    router.visit(`/admin/articles/${articleId}/approve`, {
+      method: 'patch',
+      preserveScroll: true,
+      onSuccess: () => {
+        console.log('Article approved successfully');
+      },
+      onError: (errors) => {
+        console.error('Failed to approve article:', errors);
+      }
+    });
   };
 
+
   const handleReject = (articleId: number) => {
-    // Add your reject logic here
-    console.log('Rejecting article:', articleId);
+    // Use router.visit for Inertia compatibility
+    router.visit(`/admin/articles/${articleId}/reject`, {
+      method: 'patch',
+      preserveScroll: true,
+      onSuccess: () => {
+        console.log('Article rejected successfully');
+      },
+      onError: (errors) => {
+        console.error('Failed to reject article:', errors);
+      }
+    });
   };
+
+
+  // Format date for display
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+
+  // Helper to get published date - use updated_at for approved articles
+  const getPublishedDate = (article: Article) => {
+    return article.status === 'approved' ? article.updated_at : null;
+  };
+
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Submitted Articles" />
       <div className="flex flex-col gap-4 p-4">
+
 
         {/* Header Buttons */}
         <div className="flex justify-between items-center">
@@ -70,6 +110,7 @@ export default function SubmittedArticles({ articles }: { articles: any[] }) {
             </Button>
           </div>
         </div>
+
 
         {/* Table Section */}
         <div className="overflow-x-auto rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
@@ -86,34 +127,49 @@ export default function SubmittedArticles({ articles }: { articles: any[] }) {
               </tr>
             </thead>
 
+
             <tbody className="bg-gray-900">
               {articles.length > 0 ? (
                 articles.map((article) => (
-                  <tr 
-                    key={article.article_id} 
+                  <tr
+                    key={article.article_id}
                     className="border-b border-gray-700 hover:bg-gray-800 cursor-pointer"
                     onClick={() => openModal(article)}
                   >
                     <td className="px-4 py-3 font-medium">{article.title}</td>
                     <td className="px-4 py-3">{article.category || '-'}</td>
                     <td className="px-4 py-3">{article.user_id}</td>
-                    <td className="px-4 py-3">{article.created_at}</td>
-                    <td className="px-4 py-3 capitalize">{article.status}</td>
-                    <td className="px-4 py-3">{article.published_at || '-'}</td>
+                    <td className="px-4 py-3">{formatDate(article.created_at)}</td>
+                    <td className="px-4 py-3 capitalize">
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        article.status === 'approved'
+                          ? 'bg-green-500/20 text-green-300'
+                          : article.status === 'rejected'
+                          ? 'bg-red-500/20 text-red-300'
+                          : 'bg-yellow-500/20 text-yellow-300'
+                      }`}>
+                        {article.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {formatDate(getPublishedDate(article))}
+                    </td>
                     <td className="px-4 py-3 text-center flex justify-center gap-2" onClick={(e) => e.stopPropagation()}>
-                      <Button 
-                        variant="default" 
+                      <Button
+                        variant="default"
                         size="sm"
                         onClick={() => handleApprove(article.article_id)}
+                        disabled={article.status === 'approved'}
                       >
-                        Approve
+                        {article.status === 'approved' ? 'Approved' : 'Approve'}
                       </Button>
-                      <Button 
-                        variant="destructive" 
+                      <Button
+                        variant="destructive"
                         size="sm"
                         onClick={() => handleReject(article.article_id)}
+                        disabled={article.status === 'rejected'}
                       >
-                        Reject
+                        {article.status === 'rejected' ? 'Rejected' : 'Reject'}
                       </Button>
                     </td>
                   </tr>
@@ -128,6 +184,7 @@ export default function SubmittedArticles({ articles }: { articles: any[] }) {
             </tbody>
           </table>
         </div>
+
 
         {/* Modal/Popup with Blurred Background */}
         {isModalOpen && selectedArticle && (
@@ -146,6 +203,7 @@ export default function SubmittedArticles({ articles }: { articles: any[] }) {
                 </Button>
               </div>
 
+
               {/* Content */}
               <div className="p-6 space-y-6">
                 {/* Article Metadata */}
@@ -157,10 +215,6 @@ export default function SubmittedArticles({ articles }: { articles: any[] }) {
                   <div>
                     <span className="text-gray-400">Submitted by:</span>
                     <div className="font-medium">{selectedArticle.username}</div>
-                    {/* If you have author details, you can display them:
-                    <div className="text-gray-400 text-xs">
-                      {selectedArticle.author?.email || 'No email provided'}
-                    </div> */}
                   </div>
                   <div>
                     <span className="text-gray-400">Status:</span>
@@ -168,9 +222,10 @@ export default function SubmittedArticles({ articles }: { articles: any[] }) {
                   </div>
                   <div>
                     <span className="text-gray-400">Submitted:</span>
-                    <div className="font-medium">{selectedArticle.created_at}</div>
+                    <div className="font-medium">{formatDate(selectedArticle.created_at)}</div>
                   </div>
                 </div>
+
 
                 {/* Article Content */}
                 <div>
@@ -180,34 +235,38 @@ export default function SubmittedArticles({ articles }: { articles: any[] }) {
                   </div>
                 </div>
 
+
                 {/* Published Date (if published) */}
-                {selectedArticle.published_at && (
+                {selectedArticle.status === 'approved' && (
                   <div className="text-sm">
                     <span className="text-gray-400">Published on:</span>
-                    <div className="font-medium">{selectedArticle.published_at}</div>
+                    <div className="font-medium">{formatDate(selectedArticle.updated_at)}</div>
                   </div>
                 )}
               </div>
 
+
               {/* Footer Actions */}
               <div className="flex justify-end gap-3 p-6 border-t border-gray-700">
-                <Button 
+                <Button
                   variant="default"
                   onClick={() => {
                     handleApprove(selectedArticle.article_id);
                     closeModal();
                   }}
+                  disabled={selectedArticle.status === 'approved'}
                 >
-                  Approve Article
+                  {selectedArticle.status === 'approved' ? 'Already Approved' : 'Approve Article'}
                 </Button>
-                <Button 
+                <Button
                   variant="destructive"
                   onClick={() => {
                     handleReject(selectedArticle.article_id);
                     closeModal();
                   }}
+                  disabled={selectedArticle.status === 'rejected'}
                 >
-                  Reject Article
+                  {selectedArticle.status === 'rejected' ? 'Already Rejected' : 'Reject Article'}
                 </Button>
               </div>
             </div>
