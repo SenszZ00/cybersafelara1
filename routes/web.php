@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminArticleController;
 use App\Http\Controllers\ArticleCategoryController;
 use App\Http\Controllers\AdminFeedbackController;
 use App\Http\Controllers\AdminReportController;
+use App\Http\Controllers\AdminReportLogController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -17,25 +18,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('admin_articles', function () {
-//         return Inertia::render('admin/admin_articles');
-//     })->name('admin_articles');
-// });
+// Admin Articles Routes
 Route::get('admin/admin_articles', [AdminArticleController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('admin_articles');
 
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('admin_reports', function () {
-//         return Inertia::render('admin/admin_reports');
-//     })->name('admin_reports');
-// });
 Route::get('admin_reports', [AdminReportController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('admin_reports');
 
-// Add the assignment route
+// Assignment route
 Route::post('/admin/reports/assign', [AdminReportController::class, 'assign'])
     ->middleware(['auth', 'verified'])
     ->name('admin.reports.assign');
@@ -45,12 +37,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('admin/admin_report_log');
     })->name('admin_report_log');
 });
-
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('messages', function () {
-//         return Inertia::render('admin/messages');
-//     })->name('messages');
-// });
 
 Route::get('admin/messages', [AdminFeedbackController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -87,13 +73,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('admin_upload_article', function () {
-        return Inertia::render('admin/admin_upload_article');
-    })->name('admin_upload_article');
+    Route::get('admin_upload_article', [AdminArticleController::class, 'create'])
+        ->name('admin_upload_article');
 });
 
-Route::post('/admin/articles/store', [AdminArticleController::class, 'store']);
+// Admin Article Management Routes
+Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
+    Route::post('/articles/store', [AdminArticleController::class, 'store'])
+        ->name('admin.articles.store');
 
+    Route::patch('/articles/{article}/approve', [AdminArticleController::class, 'approve'])
+        ->name('admin.articles.approve');
+
+    Route::patch('/articles/{article}/reject', [AdminArticleController::class, 'reject'])
+        ->name('admin.articles.reject');
+
+    Route::get('/articles/status/{status}', [AdminArticleController::class, 'getByStatus'])
+        ->name('admin.articles.byStatus');
+});
+
+// Article Categories Routes
 Route::prefix('/admin/article-categories')->group(function () {
     Route::get('/', [ArticleCategoryController::class, 'index']);
     Route::post('/', [ArticleCategoryController::class, 'store']);
@@ -101,9 +100,27 @@ Route::prefix('/admin/article-categories')->group(function () {
     Route::delete('/{id}', [ArticleCategoryController::class, 'destroy']);
 });
 
-// Route::get('admin/messages', [AdminFeedbackController::class, 'index'])->name('admin.feedback.index');
-Route::get('admin/messages/{id}/reply', [AdminFeedbackController::class, 'reply'])->name('admin.feedback.reply');
+// Report Log Routes
+Route::get('/admin/report-log', [AdminReportLogController::class, 'index'])
+    ->name('admin.report-log.index');
 
+Route::get('/admin/reports/{report}/log', [AdminReportLogController::class, 'show'])
+    ->name('admin.reports.log');
+
+// Feedback Routes
+Route::get('admin/messages/{id}/reply', [AdminFeedbackController::class, 'reply'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.feedback.reply');
+
+// Duplicate (kept for safety)
+Route::get('/admin/reports/{report}/log', [AdminReportLogController::class, 'show'])
+    ->name('admin.reports.log');
+
+Route::get('/admin/reports-logs', [AdminReportLogController::class, 'index'])
+    ->name('admin.reports-logs.index');
+
+Route::post('/admin/reports/{report}/manual-log', [AdminReportLogController::class, 'manualLog'])
+    ->name('admin.reports.manual-log');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

@@ -20,10 +20,11 @@ interface Report {
     description: string;
     anonymous_flag: boolean;
     user?: {
-        username: string; // Changed from name to username
+        username: string;
     };
     it_personnel?: {
-        username: string; // Changed from name to username
+        id: number;
+        username: string;
     };
     status: {
         name: string;
@@ -33,7 +34,7 @@ interface Report {
 
 interface ITPersonnel {
     id: number;
-    username: string; // Changed from name to username
+    username: string;
 }
 
 export default function SubmittedReports({ reports: initialReports, itPersonnel }: { reports: any[], itPersonnel: ITPersonnel[] }) {
@@ -63,6 +64,26 @@ export default function SubmittedReports({ reports: initialReports, itPersonnel 
                         ? { 
                             ...report, 
                             it_personnel: itPersonnel.find(p => p.id === personnelId)
+                          }
+                        : report
+                ));
+                closeModal();
+            }
+        });
+    };
+
+    const handleUnassignReport = (reportId: number) => {
+        router.post('/admin/reports/assign', {
+            report_id: reportId,
+            it_personnel_id: null
+        }, {
+            onSuccess: () => {
+                // Update local state
+                setReports(reports.map(report => 
+                    report.report_id === reportId 
+                        ? { 
+                            ...report, 
+                            it_personnel: undefined
                           }
                         : report
                 ));
@@ -132,26 +153,39 @@ export default function SubmittedReports({ reports: initialReports, itPersonnel 
                                             {new Date(report.created_at).toLocaleDateString()}
                                         </td>
                                         <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
-                                            {/* Assign Dropdown - Only show for unassigned reports */}
-                                            {!report.it_personnel && (
+                                            {/* Assign/Reassign Dropdown - Always show for admin */}
+                                            <div className="flex gap-2 justify-center">
                                                 <Select
-                                                    onValueChange={(value) => handleAssignReport(report.report_id, parseInt(value))}
+                                                    value={report.it_personnel ? String(report.it_personnel.id) : ''}
+                                                    onValueChange={(value) => {
+                                                        if (value === 'unassign') {
+                                                            handleUnassignReport(report.report_id);
+                                                        } else {
+                                                            handleAssignReport(report.report_id, parseInt(value));
+                                                        }
+                                                    }}
                                                 >
-                                                    <SelectTrigger className="w-32 h-8 text-xs">
+                                                    <SelectTrigger className="w-40 h-8 text-xs">
                                                         <SelectValue placeholder="Assign" />
                                                     </SelectTrigger>
                                                     <SelectContent>
+                                                        <SelectItem value="unassign">
+                                                            <div className="flex items-center gap-2 text-red-400">
+                                                                Unassign
+                                                            </div>
+                                                        </SelectItem>
                                                         {itPersonnel.map((person) => (
                                                             <SelectItem key={person.id} value={String(person.id)}>
                                                                 <div className="flex items-center gap-2">
                                                                     <User className="h-3 w-3" />
                                                                     {person.username}
+                                                                    {report.it_personnel?.id === person.id && ' (Current)'}
                                                                 </div>
                                                             </SelectItem>
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
-                                            )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -224,37 +258,70 @@ export default function SubmittedReports({ reports: initialReports, itPersonnel 
 
                                 {/* Assignment Section */}
                                 <div className="text-sm">
-                                    <span className="text-gray-400">Assigned To:</span>
-                                    <div className="mt-2">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-400">Assigned To:</span>
+                                    </div>
+                                    <div className="mt-2 space-y-3">
                                         {selectedReport.it_personnel ? (
-                                            <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-lg">
-                                                <Users className="h-4 w-4" />
-                                                <span className="font-medium">
-                                                    {selectedReport.it_personnel.username}
-                                                </span>
+                                            <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                                                <div className="flex items-center gap-2">
+                                                    <Users className="h-4 w-4" />
+                                                    <span className="font-medium">
+                                                        {selectedReport.it_personnel.username}
+                                                    </span>
+                                                </div>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleUnassignReport(selectedReport.report_id)}
+                                                    className="text-red-400 border-red-400 hover:bg-red-400 hover:text-white"
+                                                >
+                                                    Unassign
+                                                </Button>
                                             </div>
                                         ) : (
-                                            <div className="space-y-3">
-                                                <p className="text-gray-400">This report is not assigned yet.</p>
-                                                <Select
-                                                    onValueChange={(value) => handleAssignReport(selectedReport.report_id, parseInt(value))}
-                                                >
-                                                    <SelectTrigger className="w-full">
-                                                        <SelectValue placeholder="Select IT personnel to assign..." />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {itPersonnel.map((person) => (
-                                                            <SelectItem key={person.id} value={String(person.id)}>
-                                                                <div className="flex items-center gap-2">
-                                                                    <User className="h-3 w-3" />
-                                                                    {person.username}
-                                                                </div>
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
+                                            <p className="text-gray-400">This report is not assigned yet.</p>
                                         )}
+                                        
+                                        <Select
+                                            onValueChange={(value) => {
+                                                if (value === 'unassign') {
+                                                    handleUnassignReport(selectedReport.report_id);
+                                                } else {
+                                                    handleAssignReport(selectedReport.report_id, parseInt(value));
+                                                }
+                                            }}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder={
+                                                    selectedReport.it_personnel 
+                                                        ? "Reassign to different IT personnel..." 
+                                                        : "Select IT personnel to assign..."
+                                                } />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {selectedReport.it_personnel && (
+                                                    <SelectItem value="unassign">
+                                                        <div className="flex items-center gap-2 text-red-400">
+                                                            Unassign Current Personnel
+                                                        </div>
+                                                    </SelectItem>
+                                                )}
+                                                {itPersonnel.map((person) => (
+                                                    <SelectItem 
+                                                        key={person.id} 
+                                                        value={String(person.id)}
+                                                        disabled={selectedReport.it_personnel?.id === person.id}
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <User className="h-3 w-3" />
+                                                            {person.username}
+                                                            {selectedReport.it_personnel?.id === person.id && ' (Current)'}
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 </div>
 

@@ -1,11 +1,14 @@
 <?php
 
+
 namespace App\Http\Controllers;
+
 
 use App\Models\Report;
 use App\Models\User;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+
 
 class AdminReportController extends Controller
 {
@@ -13,15 +16,16 @@ class AdminReportController extends Controller
 {
     // Debug: Check if we're reaching this method
     \Log::info('AdminReportController index method called');
-    
+   
     // Debug: Check what data we have
     $reportsCount = Report::count();
     $itPersonnelCount = User::where('role', 'it')->count();
-    
+   
     \Log::info('Data counts:', [
         'reports' => $reportsCount,
         'it_personnel' => $itPersonnelCount
     ]);
+
 
     // Get all reports with relationships
     $reports = Report::with([
@@ -50,6 +54,7 @@ class AdminReportController extends Controller
             ];
         });
 
+
     // Get IT personnel (users with role 'it')
     $itPersonnel = User::where('role', 'it')
         ->select('id', 'username')
@@ -61,6 +66,7 @@ class AdminReportController extends Controller
             ];
         });
 
+
     // Debug: Check final data being sent
     \Log::info('Final data being sent to frontend:', [
         'reports_count' => $reports->count(),
@@ -69,11 +75,13 @@ class AdminReportController extends Controller
         'first_it_personnel' => $itPersonnel->first(),
     ]);
 
+
     return Inertia::render('admin/admin_reports', [
         'reports' => $reports,
         'itPersonnel' => $itPersonnel,
     ]);
 }
+
 
     public function assign(Request $request)
     {
@@ -82,22 +90,26 @@ class AdminReportController extends Controller
             'it_personnel_id' => 'nullable|exists:users,id', // Make nullable for unassignment
         ]);
 
+
         $report = Report::findOrFail($validated['report_id']);
-        
+       
         $updateData = [
             'it_personnel_id' => $validated['it_personnel_id'],
         ];
-        
+       
         // Only update status if assigning (not unassigning)
         if ($validated['it_personnel_id']) {
             $updateData['report_status_id'] = 2; // under review when assigned
         }
 
+
         $report->update($updateData);
 
-        $message = $validated['it_personnel_id'] 
-            ? 'Report assigned successfully!' 
+
+        $message = $validated['it_personnel_id']
+            ? 'Report assigned successfully!'
             : 'Report unassigned successfully!';
+
 
         return back()->with('success', $message);
     }
