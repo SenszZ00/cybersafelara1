@@ -48,25 +48,33 @@ class AdminArticleController extends Controller
     {
         $articles = Article::with(['user:id,username', 'category:id,name', 'articleStatus:id,name'])
             ->latest()
-            ->get()
-            ->map(function ($article) {
-                return [
-                    'article_id' => $article->article_id,
-                    'user_id' => $article->user_id,
-                    'username' => $article->user?->username ?? 'Unknown',
-                    'title' => $article->title,
-                    'content' => $article->content,
-                    'category' => $article->category?->name ?? 'Uncategorized',
-                    'keyword' => $article->keyword,
-                    'status' => $article->articleStatus->name,
-                    'created_at' => $article->created_at->format('Y-m-d H:i:s'),
-                    'updated_at' => $article->updated_at->format('Y-m-d H:i:s'),
-                ];
-            });
+            ->paginate(20); // Changed from get() to paginate(20)
 
+        $articles->getCollection()->transform(function ($article) {
+            return [
+                'article_id' => $article->article_id,
+                'user_id' => $article->user_id,
+                'username' => $article->user?->username ?? 'Unknown',
+                'title' => $article->title,
+                'content' => $article->content,
+                'category' => $article->category?->name ?? 'Uncategorized', 
+                'keyword' => $article->keyword,
+                'status' => $article->articleStatus->name,
+                'created_at' => $article->created_at->format('Y-m-d H:i:s'),
+                'updated_at' => $article->updated_at->format('Y-m-d H:i:s'),
+            ];
+        });
 
         return Inertia::render('admin/admin_articles', [
-            'articles' => $articles,
+            'articles' => $articles->items(),
+            'pagination' => [
+                'current_page' => $articles->currentPage(),
+                'last_page' => $articles->lastPage(),
+                'per_page' => $articles->perPage(),
+                'total' => $articles->total(),
+                'from' => $articles->firstItem(),
+                'to' => $articles->lastItem(),
+            ]
         ]);
     }
 
