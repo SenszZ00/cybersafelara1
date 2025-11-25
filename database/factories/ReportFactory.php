@@ -14,7 +14,7 @@ class ReportFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => 29, // Fixed reporter user_id
+            'user_id' => 28, // Fixed reporter user_id
             'it_personnel_id' => 10, // Start with no IT personnel
             'anonymous_flag' => $this->faker->boolean(20),
             'incident_type' => $this->faker->randomElement([

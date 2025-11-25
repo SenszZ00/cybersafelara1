@@ -6,11 +6,38 @@ use App\Http\Controllers\ArticleCategoryController;
 use App\Http\Controllers\AdminFeedbackController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminReportLogController;
+use App\Http\Controllers\PublicArticleController;
+use App\Models\Article;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    // Only fetch approved articles (status_id = 2)
+    $articles = \App\Models\Article::with(['user:id,user_id,name,username', 'category:id,name'])
+        ->where('article_status_id', 2) // Only approved articles
+        ->latest()
+        ->get()
+        ->map(function ($article) {
+            return [
+                'article_id' => $article->article_id,
+                'title' => $article->title,
+                'content' => $article->content,
+                'keyword' => $article->keyword,
+                'created_at' => $article->created_at->format('Y-m-d H:i:s'),
+                'user' => $article->user ? [
+                    'username' => $article->user->username,
+                ] : null,
+                'category' => $article->category ? [
+                    'name' => $article->category->name,
+                ] : null,
+            ];
+        });
+
+    return Inertia::render('welcome', [
+        'articles' => $articles,
+    ]);
 })->name('home');
+
+// Route::get('/public/articles', [PublicArticleController::class, 'index']);
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
@@ -26,6 +53,12 @@ Route::get('admin/admin_articles', [AdminArticleController::class, 'index'])
 Route::get('admin_reports', [AdminReportController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('admin_reports');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('admin_public_articles', function () {
+        return Inertia::render('admin/admin_public_articles');
+    })->name('admin_public_articles');
+});
 
 // Assignment route
 Route::post('/admin/reports/assign', [AdminReportController::class, 'assign'])

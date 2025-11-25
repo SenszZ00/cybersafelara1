@@ -38,7 +38,7 @@ export default function Register({ collegeDepartments }: RegisterProps) {
 
   return (
     <AuthLayout
-      title="Create a CyberSafe account"
+      title="Create an account"
       description="Enter your details below to create your account"
     >
       <Head title="Register" />
@@ -57,7 +57,7 @@ export default function Register({ collegeDepartments }: RegisterProps) {
 
               {/* Full Name */}
               <div className="grid gap-2">
-                <Label htmlFor="name" className="flex items-center gap-1">
+                <Label htmlFor="name" className="flex items-center gap-1 text-gray-700">
                   Full Name <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -68,13 +68,14 @@ export default function Register({ collegeDepartments }: RegisterProps) {
                   autoComplete="name"
                   name="name"
                   placeholder="Enter your full name"
+                  className="border-gray-300 focus:border-[#992426] focus:ring-[#992426] text-gray-700"
                 />
                 <InputError message={errors.name} className="mt-2" />
               </div>
 
               {/* Username */}
               <div className="grid gap-2">
-                <Label htmlFor="username" className="flex items-center gap-1">
+                <Label htmlFor="username" className="flex items-center gap-1 text-gray-700">
                   Username <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -85,13 +86,14 @@ export default function Register({ collegeDepartments }: RegisterProps) {
                   autoComplete="username"
                   name="username"
                   placeholder="Enter username"
+                  className="border-gray-300 focus:border-[#992426] focus:ring-[#992426] text-gray-700"
                 />
                 <InputError message={errors.username} className="mt-2" />
               </div>
 
               {/* Email */}
               <div className="grid gap-2">
-                <Label htmlFor="email" className="flex items-center gap-1">
+                <Label htmlFor="email" className="flex items-center gap-1 text-gray-700">
                   Email address <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -102,6 +104,7 @@ export default function Register({ collegeDepartments }: RegisterProps) {
                   autoComplete="email"
                   name="email"
                   placeholder="email@usep.edu.ph"
+                  className="border-gray-300 focus:border-[#992426] focus:ring-[#992426] text-gray-700"
                 />
                 <InputError message={errors.email} />
               </div>
@@ -110,12 +113,12 @@ export default function Register({ collegeDepartments }: RegisterProps) {
               <div className="grid gap-2">
                 <Label
                   htmlFor="college_department_id"
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 text-gray-700"
                 >
                   College/Department <span className="text-red-500">*</span>
                 </Label>
                 <Select name="college_department_id" required>
-                  <SelectTrigger>
+                  <SelectTrigger className="border-gray-300 focus:border-[#992426] focus:ring-[#992426] text-gray-700">
                     <SelectValue placeholder="Select your department" />
                   </SelectTrigger>
                   <SelectContent>
@@ -131,7 +134,7 @@ export default function Register({ collegeDepartments }: RegisterProps) {
 
               {/* Password */}
               <div className="grid gap-2">
-                <Label htmlFor="password" className="flex items-center gap-1">
+                <Label htmlFor="password" className="flex items-center gap-1 text-gray-700">
                   Password <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -142,6 +145,7 @@ export default function Register({ collegeDepartments }: RegisterProps) {
                   autoComplete="new-password"
                   name="password"
                   placeholder="Password"
+                  className="border-gray-300 focus:border-[#992426] focus:ring-[#992426] text-gray-700"
                 />
                 <InputError message={errors.password} />
               </div>
@@ -150,7 +154,7 @@ export default function Register({ collegeDepartments }: RegisterProps) {
               <div className="grid gap-2">
                 <Label
                   htmlFor="password_confirmation"
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 text-gray-700"
                 >
                   Confirm password <span className="text-red-500">*</span>
                 </Label>
@@ -162,6 +166,7 @@ export default function Register({ collegeDepartments }: RegisterProps) {
                   autoComplete="new-password"
                   name="password_confirmation"
                   placeholder="Confirm password"
+                  className="border-gray-300 focus:border-[#992426] focus:ring-[#992426] text-gray-700"
                 />
                 <InputError message={errors.password_confirmation} />
               </div>
@@ -169,7 +174,7 @@ export default function Register({ collegeDepartments }: RegisterProps) {
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="mt-2 w-full"
+                className="mt-2 w-full bg-[#992426] hover:bg-[#7a1d1f] text-white"
                 tabIndex={6}
                 disabled={processing}
               >
@@ -181,9 +186,13 @@ export default function Register({ collegeDepartments }: RegisterProps) {
             </div>
 
             {/* Login Link */}
-            <div className="text-center text-sm text-muted-foreground">
+            <div className="text-center text-sm text-gray-600">
               Already have an account?{' '}
-              <TextLink href={login()} tabIndex={7}>
+              <TextLink 
+                href={login()} 
+                tabIndex={7}
+                className="text-[#992426] hover:text-[#7a1d1f]"
+              >
                 Log in
               </TextLink>
             </div>

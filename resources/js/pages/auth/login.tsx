@@ -33,7 +33,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email" className="text-gray-700">Email address</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -43,17 +43,18 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                     tabIndex={1}
                                     autoComplete="email"
                                     placeholder="email@example.com"
+                                    className="border-gray-300 focus:border-[#992426] focus:ring-[#992426]"
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
                             <div className="grid gap-2">
                                 <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
+                                    <Label htmlFor="password" className="text-gray-700">Password</Label>
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
-                                            className="ml-auto text-sm"
+                                            className="ml-auto text-sm text-[#992426] hover:text-[#7a1d1f]"
                                             tabIndex={5}
                                         >
                                             Forgot password?
@@ -68,6 +69,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                     tabIndex={2}
                                     autoComplete="current-password"
                                     placeholder="Password"
+                                    className="border-gray-300 focus:border-[#992426] focus:ring-[#992426]"
                                 />
                                 <InputError message={errors.password} />
                             </div>
@@ -77,13 +79,14 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                     id="remember"
                                     name="remember"
                                     tabIndex={3}
+                                    className="text-[#992426] border-gray-300 focus:ring-[#992426]"
                                 />
-                                <Label htmlFor="remember">Remember me</Label>
+                                <Label htmlFor="remember" className="text-gray-700">Remember me</Label>
                             </div>
 
                             <Button
                                 type="submit"
-                                className="mt-4 w-full"
+                                className="mt-4 w-full bg-[#992426] hover:bg-[#7a1d1f] text-white"
                                 tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
@@ -93,9 +96,13 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             </Button>
                         </div>
 
-                        <div className="text-center text-sm text-muted-foreground">
+                        <div className="text-center text-sm text-gray-600">
                             Don't have an account?{' '}
-                            <TextLink href={register()} tabIndex={5}>
+                            <TextLink 
+                                href={register()} 
+                                tabIndex={5}
+                                className="text-[#992426] hover:text-[#7a1d1f]"
+                            >
                                 Sign up
                             </TextLink>
                         </div>

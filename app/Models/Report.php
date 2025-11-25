@@ -1,16 +1,20 @@
 <?php
 
+
 namespace App\Models;
+
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+
 
 class Report extends Model
 {
     use HasFactory;
 
+
     protected $primaryKey = 'report_id';
-    
+   
     protected $fillable = [
         'user_id',
         'it_personnel_id',
@@ -23,9 +27,11 @@ class Report extends Model
         'report_status_id',
     ];
 
+
     protected static function boot()
     {
         parent::boot();
+
 
         // When a report is created (submitted)
         static::created(function ($report) {
@@ -35,7 +41,7 @@ class Report extends Model
                 $itPersonnel = User::where('role', 'it')
                     ->where('college_department_id', $report->user->college_department_id)
                     ->first();
-                
+               
                 if ($itPersonnel) {
                     $report->update([
                         'it_personnel_id' => $itPersonnel->id,
@@ -43,6 +49,7 @@ class Report extends Model
                     ]);
                 }
             }
+
 
             // Create initial log (now includes auto-assigned personnel if any)
             ReportLog::create([
@@ -56,22 +63,24 @@ class Report extends Model
             ]);
         });
 
+
         // When a report is updated (keep your existing code)
         static::updated(function ($report) {
             $changes = $report->getChanges();
-            
+           
             // Map report_status_id to status enum
             $statusMap = [
                 1 => 'pending',
-                2 => 'under review', 
+                2 => 'under review',
                 3 => 'resolved'
             ];
+
 
             // Log status changes
             if (array_key_exists('report_status_id', $changes)) {
                 $newStatusId = $changes['report_status_id'];
                 $newStatus = $statusMap[$newStatusId] ?? 'pending';
-                
+               
                 ReportLog::create([
                     'report_id' => $report->report_id,
                     'incident_type' => $report->incident_type,
@@ -83,10 +92,11 @@ class Report extends Model
                 ]);
             }
 
+
             // Log IT personnel assignment (even without status change)
             if (array_key_exists('it_personnel_id', $changes) && $report->it_personnel_id) {
                 $currentStatus = $statusMap[$report->report_status_id] ?? 'pending';
-                
+               
                 ReportLog::create([
                     'report_id' => $report->report_id,
                     'incident_type' => $report->incident_type,
@@ -100,11 +110,13 @@ class Report extends Model
         });
     }
 
+
     // 🔹 Relationship with ReportStatus
     public function status()
     {
         return $this->belongsTo(ReportStatus::class, 'report_status_id');
     }
+
 
     // 🔹 Relationship with User (reporter)
     public function user()
@@ -112,11 +124,13 @@ class Report extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+
     // 🔹 Relationship with IT Personnel
     public function itPersonnel()
     {
         return $this->belongsTo(User::class, 'it_personnel_id');
     }
+
 
     public function logs()
     {

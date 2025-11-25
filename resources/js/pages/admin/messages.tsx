@@ -50,49 +50,53 @@ export default function Messages({ feedbacks }: { feedbacks: any[] }) {
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Messages" />
-      <div className="flex flex-col gap-4 p-4">
+      <div className="flex flex-col gap-6 p-6 bg-white">
+
         {/* Header */}
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold">User Feedback</h2>
+          <h2 className="text-2xl font-bold text-gray-900">User Feedback</h2>
+          <div className="text-sm text-gray-500">
+            {feedbacks?.length || 0} messages
+          </div>
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-          <table className="min-w-full table-auto text-sm text-left text-gray-200">
-            <thead className="bg-gray-800 text-gray-100">
-              <tr>
-                <th className="px-4 py-3">Feedback ID</th>
-                <th className="px-4 py-3">User</th>
-                <th className="px-4 py-3">Subject</th>
-                <th className="px-4 py-3">Message</th>
-                <th className="px-4 py-3">Submitted At</th>
-                <th className="px-4 py-3 text-center">Actions</th>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm text-left">
+            <thead>
+              <tr className="bg-[#770000] text-white">
+                <th className="px-6 py-4 font-semibold">Feedback ID</th>
+                <th className="px-6 py-4 font-semibold">User</th>
+                <th className="px-6 py-4 font-semibold">Subject</th>
+                <th className="px-6 py-4 font-semibold">Message</th>
+                <th className="px-6 py-4 font-semibold">Submitted At</th>
+                <th className="px-6 py-4 font-semibold text-center">Actions</th>
               </tr>
             </thead>
 
-            <tbody className="bg-gray-900">
+            <tbody>
               {feedbacks && feedbacks.length > 0 ? (
                 feedbacks.map((f) => (
                   <tr 
                     key={f.feedback_id} 
-                    className="border-b border-gray-700 hover:bg-gray-800 cursor-pointer"
+                    className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
                     onClick={() => openModal(f)}
                   >
-                    <td className="px-4 py-3">{f.feedback_id}</td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium">
+                    <td className="px-6 py-4 font-medium text-gray-900">{f.feedback_id}</td>
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-gray-900">
                         {f.user?.name ?? f.user?.username ?? `User ${f.user_id}`}
                       </div>
-                      <div className="text-xs text-gray-400">{f.user?.email ?? '-'}</div>
+                      <div className="text-xs text-gray-500">{f.user?.email ?? '-'}</div>
                     </td>
-                    <td className="px-4 py-3 font-medium">{f.subject}</td>
-                    <td className="px-4 py-3 max-w-[420px] truncate">{f.content}</td>
-                    <td className="px-4 py-3">{new Date(f.created_at).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-6 py-4 font-medium text-gray-900">{f.subject}</td>
+                    <td className="px-6 py-4 text-gray-600 max-w-[420px] truncate">{f.content}</td>
+                    <td className="px-6 py-4 text-gray-600">{new Date(f.created_at).toLocaleString()}</td>
+                    <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                       <Button 
-                        variant="secondary" 
+                        variant="outline" 
                         size="sm" 
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 border-[#770000] text-[#770000] hover:bg-[#770000] hover:text-white"
                         onClick={() => handleReply(f.user?.email || '', f.subject)}
                         disabled={!f.user?.email}
                       >
@@ -104,7 +108,7 @@ export default function Messages({ feedbacks }: { feedbacks: any[] }) {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="text-center py-6 text-gray-400">
+                  <td colSpan={6} className="text-center py-12 text-gray-500">
                     No feedback messages found.
                   </td>
                 </tr>
@@ -113,39 +117,42 @@ export default function Messages({ feedbacks }: { feedbacks: any[] }) {
           </table>
         </div>
 
-        {/* Modal/Popup with Blurred Background */}
+        {/* Modal/Popup */}
         {isModalOpen && selectedFeedback && (
           <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
+            <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 shadow-2xl">
               {/* Header */}
-              <div className="flex justify-between items-center p-6 border-b border-gray-700">
-                <h3 className="text-lg font-semibold">{selectedFeedback.subject}</h3>
+              <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">{selectedFeedback.subject}</h3>
+                  <p className="text-sm text-gray-500">Feedback #{selectedFeedback.id}</p>
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={closeModal}
-                  className="h-8 w-8 p-0 hover:bg-gray-800"
+                  className="h-8 w-8 p-0 hover:bg-gray-100 text-gray-500"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
 
               {/* Content */}
-              <div className="p-6 space-y-4">
+              <div className="p-6 space-y-6">
                 {/* User Info */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-6 text-sm">
                   <div>
-                    <span className="text-gray-400">From:</span>
-                    <div className="font-medium">
+                    <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">From</span>
+                    <div className="font-medium text-gray-900 mt-1">
                       {selectedFeedback.user?.name ?? selectedFeedback.user?.username ?? `User ${selectedFeedback.user_id}`}
                     </div>
-                    <div className="text-gray-400 text-xs">
+                    <div className="text-gray-500 text-xs mt-1">
                       {selectedFeedback.user?.email ?? 'No email provided'}
                     </div>
                   </div>
                   <div>
-                    <span className="text-gray-400">Submitted:</span>
-                    <div className="font-medium">
+                    <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">Submitted</span>
+                    <div className="font-medium text-gray-900 mt-1">
                       {new Date(selectedFeedback.created_at).toLocaleString()}
                     </div>
                   </div>
@@ -153,22 +160,22 @@ export default function Messages({ feedbacks }: { feedbacks: any[] }) {
 
                 {/* Full Message */}
                 <div>
-                  <span className="text-gray-400 text-sm">Message:</span>
-                  <div className="mt-2 p-4 bg-gray-800 rounded-lg whitespace-pre-wrap">
+                  <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">Message</span>
+                  <div className="mt-2 p-4 bg-gray-50 rounded-lg whitespace-pre-wrap text-gray-700 border border-gray-200">
                     {selectedFeedback.content}
                   </div>
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="flex justify-end p-6 border-t border-gray-700">
+              <div className="flex justify-end p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
                 <Button 
                   onClick={() => {
                     handleReply(selectedFeedback.user?.email || '', selectedFeedback.subject);
                     closeModal();
                   }}
                   disabled={!selectedFeedback.user?.email}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 bg-[#770000] hover:bg-[#992426] text-white"
                 >
                   <MessageSquare className="h-4 w-4" />
                   Reply via Email
