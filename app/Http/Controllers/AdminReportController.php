@@ -23,18 +23,22 @@ class AdminReportController extends Controller
             'it_personnel' => $itPersonnelCount
         ]);
 
-        // Get all reports with relationships
+        // Get all reports with relationships - ADD CATEGORY RELATIONSHIP
         $reports = Report::with([
             'user:id,username,college_department_id',
             'itPersonnel:id,username,college_department_id',  
-            'status:id,name'
+            'status:id,name',
+            'category:id,name' // ADD THIS LINE
         ])
             ->latest()
             ->get()
             ->map(function ($report) {
                 return [
                     'report_id' => $report->report_id,
-                    'incident_type' => $report->incident_type,
+                    // REPLACE incident_type with category
+                    'category' => [
+                        'name' => $report->category->name,
+                    ],
                     'description' => $report->description,
                     'anonymous_flag' => $report->anonymous_flag,
                     'user' => $report->user ? [

@@ -4,8 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Report;
-use App\Models\ReportLog;
-use App\Models\ReportStatus;
+use App\Models\ReportCategory;
 
 class ReportFactory extends Factory
 {
@@ -14,17 +13,10 @@ class ReportFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => 28, // Fixed reporter user_id
+            'user_id' => 19, // Fixed reporter user_id
             'it_personnel_id' => 10, // Start with no IT personnel
+            'report_category_id' => ReportCategory::inRandomOrder()->first()->id, // Random report category
             'anonymous_flag' => $this->faker->boolean(20),
-            'incident_type' => $this->faker->randomElement([
-                'Hardware Issue',
-                'Software Issue',
-                'Network Problem',
-                'Security Concern',
-                'Account Access',
-                'Other'
-            ]),
             'description' => $this->faker->paragraph(3),
             'attachment_mime' => $this->faker->optional(0.3)->mimeType(),
             'attachment_name' => $this->faker->optional(0.3)->word() . '.' . $this->faker->fileExtension(),
@@ -77,6 +69,15 @@ class ReportFactory extends Factory
         return $this->state(function (array $attributes) {
             return [
                 'anonymous_flag' => false,
+            ];
+        });
+    }
+
+    public function withCategory($categoryId)
+    {
+        return $this->state(function (array $attributes) use ($categoryId) {
+            return [
+                'report_category_id' => $categoryId,
             ];
         });
     }

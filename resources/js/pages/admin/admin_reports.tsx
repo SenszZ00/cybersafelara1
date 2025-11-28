@@ -16,9 +16,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface Report {
     report_id: number;
-    incident_type: string;
     description: string;
     anonymous_flag: boolean;
+    category: {
+        name: string;
+    };
     user?: {
         username: string;
     };
@@ -118,7 +120,7 @@ export default function SubmittedReports({ reports: initialReports, itPersonnel 
                         <thead>
                             <tr className="bg-[#770000] text-white">
                                 <th className="px-6 py-4 font-semibold">Report ID</th>
-                                <th className="px-6 py-4 font-semibold">Incident Type</th>
+                                <th className="px-6 py-4 font-semibold">Category</th>
                                 <th className="px-6 py-4 font-semibold">Submitted By</th>
                                 <th className="px-6 py-4 font-semibold">Assigned To</th>
                                 <th className="px-6 py-4 font-semibold">Status</th>
@@ -136,7 +138,7 @@ export default function SubmittedReports({ reports: initialReports, itPersonnel 
                                         onClick={() => openModal(report)}
                                     >
                                         <td className="px-6 py-4 font-mono text-gray-900">{report.report_id}</td>
-                                        <td className="px-6 py-4 font-medium text-gray-900">{report.incident_type}</td>
+                                        <td className="px-6 py-4 font-medium text-gray-900">{report.category.name}</td>
                                         <td className="px-6 py-4 text-gray-600">
                                             {report.anonymous_flag ? 'Anonymous' : report.user?.username}
                                         </td>
@@ -206,7 +208,7 @@ export default function SubmittedReports({ reports: initialReports, itPersonnel 
                             {/* Header */}
                             <div className="flex justify-between items-center p-6 border-b border-gray-200">
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-900">{selectedReport.incident_type}</h3>
+                                    <h3 className="text-xl font-bold text-gray-900">{selectedReport.category.name}</h3>
                                     <p className="text-sm text-gray-500">Report #{selectedReport.report_id}</p>
                                 </div>
                                 <Button
