@@ -3,7 +3,7 @@ import { admin_articles } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { X, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -55,8 +55,10 @@ export default function SubmittedArticles({
   };
 
   const handleApprove = (articleId: number) => {
-    router.visit(`/admin/articles/${articleId}/approve`, {
-      method: 'patch',
+    router.patch(`/admin/articles/${articleId}/approve`, {
+      page: pagination.current_page // Pass current page to backend
+    }, {
+      preserveState: true,
       preserveScroll: true,
       onSuccess: () => {
         console.log('Article approved successfully');
@@ -68,8 +70,10 @@ export default function SubmittedArticles({
   };
 
   const handleReject = (articleId: number) => {
-    router.visit(`/admin/articles/${articleId}/reject`, {
-      method: 'patch',
+    router.patch(`/admin/articles/${articleId}/reject`, {
+      page: pagination.current_page // Pass current page to backend
+    }, {
+      preserveState: true,
       preserveScroll: true,
       onSuccess: () => {
         console.log('Article rejected successfully');
@@ -104,7 +108,7 @@ export default function SubmittedArticles({
   const getPageNumbers = () => {
     const current = pagination.current_page;
     const last = pagination.last_page;
-    const delta = 1; // Number of pages to show on each side of current page
+    const delta = 1;
     const range = [];
     const rangeWithDots = [];
 

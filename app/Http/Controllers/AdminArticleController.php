@@ -1,15 +1,12 @@
 <?php
 
-
 namespace App\Http\Controllers;
-
 
 use App\Models\Article;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\ArticleCategory;
 use App\Models\ArticleStatus;
-
 
 class AdminArticleController extends Controller
 {
@@ -22,12 +19,10 @@ class AdminArticleController extends Controller
             'content' => 'required|string',
         ]);
 
-
         $user = auth()->user();
        
         // For admin submissions, use status_id 2 (approved)
         $articleStatusId = 2; // approved
-
 
         Article::create([
             'user_id' => $user?->id,
@@ -38,17 +33,15 @@ class AdminArticleController extends Controller
             'article_status_id' => $articleStatusId,
         ]);
 
-
         return redirect()->route('admin_articles')
             ->with('success', 'Article published to public feed!');
     }
 
-
-    public function index()
+    public function index(Request $request)
     {
         $articles = Article::with(['user:id,username', 'category:id,name', 'articleStatus:id,name'])
             ->latest()
-            ->paginate(20); // Changed from get() to paginate(20)
+            ->paginate(20);
 
         $articles->getCollection()->transform(function ($article) {
             return [
@@ -78,54 +71,54 @@ class AdminArticleController extends Controller
         ]);
     }
 
-
     public function create()
     {
         $categories = ArticleCategory::select('id', 'name')->get();
-
 
         return Inertia::render('admin/admin_upload_article', [
             'categories' => $categories,
         ]);
     }
 
-
-    public function approve(Article $article)
+    public function approve(Article $article, Request $request)
     {
         $approvedStatus = ArticleStatus::where('name', 'approved')->first();
        
         if (!$approvedStatus) {
-            return redirect()->route('admin_articles')
+            return redirect()->back()
                 ->with('error', 'Approved status not found');
         }
-
 
         $article->update([
             'article_status_id' => $approvedStatus->id,
         ]);
 
-
-        return redirect()->route('admin_articles')
+        // Get the current page from the request or default to 1
+        $currentPage = $request->input('page', 1);
+        
+        // Redirect back to the same page
+        return redirect()->to(route('admin_articles', ['page' => $currentPage]))
             ->with('success', 'Article approved successfully');
     }
 
-
-    public function reject(Article $article)
+    public function reject(Article $article, Request $request)
     {
         $rejectedStatus = ArticleStatus::where('name', 'rejected')->first();
        
         if (!$rejectedStatus) {
-            return redirect()->route('admin_articles')
+            return redirect()->back()
                 ->with('error', 'Rejected status not found');
         }
-
 
         $article->update([
             'article_status_id' => $rejectedStatus->id,
         ]);
 
-
-        return redirect()->route('admin_articles')
+        // Get the current page from the request or default to 1
+        $currentPage = $request->input('page', 1);
+        
+        // Redirect back to the same page
+        return redirect()->to(route('admin_articles', ['page' => $currentPage]))
             ->with('success', 'Article rejected successfully');
     }
 }

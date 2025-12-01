@@ -2,65 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ReportCategory;
-use App\Http\Requests\StoreReportCategoryRequest;
-use App\Http\Requests\UpdateReportCategoryRequest;
+use App\Models\IncidentCategory;
+use Illuminate\Http\Request;
 
 class ReportCategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $categories = IncidentCategory::all();
+        return response()->json($categories);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(Request $request)
     {
-        //
-    }
+        $request->validate([
+            'name' => 'required|string|max:255|unique:incident_categories,name'
+        ]);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreReportCategoryRequest $request)
-    {
-        //
-    }
+        $category = IncidentCategory::create([
+            'name' => $request->name
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(ReportCategory $reportCategory)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ReportCategory $reportCategory)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateReportCategoryRequest $request, ReportCategory $reportCategory)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ReportCategory $reportCategory)
-    {
-        //
+        return response()->json($category);
     }
 }

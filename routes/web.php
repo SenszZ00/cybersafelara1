@@ -8,6 +8,12 @@ use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminReportLogController;
 use App\Http\Controllers\PublicArticleController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\UserReportController;
+use App\Http\Controllers\ReportCategoryController;
+use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\ReportLogController;
+use App\Http\Controllers\ReportStatusController;
 use App\Models\Article;
 use Inertia\Inertia;
 
@@ -88,28 +94,14 @@ Route::post('/admin/reports/assign', [AdminReportController::class, 'assign'])
     ->middleware(['auth', 'verified'])
     ->name('admin.reports.assign');
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('admin_report_log', function () {
-        return Inertia::render('admin/admin_report_log');
-    })->name('admin_report_log');
-});
+Route::get('admin_report_log', [AdminReportLogController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin_report_log');
 
 
 Route::get('admin/messages', [AdminFeedbackController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('messages');
-
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('it_report_log', function () {
-        return Inertia::render('it/it-report_log');
-    })->name('it_report_log');
-});
-
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('it_reports', function () {
-        return Inertia::render('it/it-reports');
-    })->name('it_reports');
-});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('articles', function () {
@@ -118,15 +110,48 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('my_articles', function () {
-        return Inertia::render('user/my_articles');
-    })->name('my_articles');
+    Route::get('user/my_articles', [ArticleController::class, 'myArticles'])
+        ->name('my_articles');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('my_reports', function () {
-        return Inertia::render('user/my_reports');
-    })->name('my_reports');
+    Route::post('/articles/store', [ArticleController::class, 'storeUserArticle'])
+        ->name('articles.store');
+});
+
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/upload_article', function () {
+        return Inertia::render('user/user_upload_article');
+    })->name('upload_article');
+});
+
+
+Route::post('/articles/store', [ArticleController::class, 'storeUserArticle'])
+    ->middleware(['auth', 'verified'])
+    ->name('articles.store');
+
+
+Route::middleware(['auth','verified'])->group(function () {
+    Route::get('/my_reports', [UserReportController::class, 'MyReports'])->name('my_reports');
+
+    // GET page that shows the submit form
+    Route::get('/user/user_submit_report', [UserReportController::class, 'submitReport'])
+        ->name('user.user_submit_report');
+
+    // POST endpoint the form will call
+    Route::post('/user/reports/store', [UserReportController::class, 'store'])
+        ->name('user.reports.store');
+
+    // view a single report
+    Route::get('/user/view-report/{id}', [UserReportController::class, 'viewReport'])
+        ->name('user.view_report');
+
+        Route::get('/user/incident_categories', [ReportCategoryController::class, 'index'])
+    ->name('user.incident_categories.index');
+
+    Route::post('/user/incident-categories', [ReportCategoryController::class, 'store'])
+    ->name('user.incident_categories.store');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -157,27 +182,6 @@ Route::prefix('/admin/article-categories')->group(function () {
     Route::delete('/{id}', [ArticleCategoryController::class, 'destroy']);
 });
 
-// // Report Log Routes
-// Route::get('/admin/report-log', [AdminReportLogController::class, 'index'])
-//     ->name('admin.report-log.index');
-
-// Route::get('/admin/reports/{report}/log', [AdminReportLogController::class, 'show'])
-//     ->name('admin.reports.log');
-
-// // Feedback Routes
-// Route::get('admin/messages/{id}/reply', [AdminFeedbackController::class, 'reply'])
-//     ->middleware(['auth', 'verified'])
-//     ->name('admin.feedback.reply');
-
-// // Duplicate (kept for safety)
-// Route::get('/admin/reports/{report}/log', [AdminReportLogController::class, 'show'])
-//     ->name('admin.reports.log');
-
-// Route::get('/admin/reports-logs', [AdminReportLogController::class, 'index'])
-//     ->name('admin.reports-logs.index');
-
-// Route::post('/admin/reports/{report}/manual-log', [AdminReportLogController::class, 'manualLog'])
-//     ->name('admin.reports.manual-log');
 
 //User Articles
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -186,6 +190,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::get('/search', [SearchController::class, 'search'])->name('search');
 
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post('/feedback', [FeedbackController::class, 'store'])
+        ->name('feedback.store');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    // IT Assigned Reports
+    Route::get('it_reports', [ReportLogController::class, 'assignedReports'])
+        ->name('it_reports');
+
+    // IT Report Log page
+    Route::get('it_report_log', [ReportLogController::class, 'index'])
+        ->name('it_report_log');
+
+    // Status updates
+    Route::put('/reports/{report}/status', [ReportStatusController::class, 'update'])
+        ->name('reports.updateStatus');
+});
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

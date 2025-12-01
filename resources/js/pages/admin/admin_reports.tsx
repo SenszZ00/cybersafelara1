@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { admin_reports } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { User, Users, X } from 'lucide-react';
+import { User, Users, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -39,10 +39,32 @@ interface ITPersonnel {
     username: string;
 }
 
-export default function SubmittedReports({ reports: initialReports, itPersonnel }: { reports: any[], itPersonnel: ITPersonnel[] }) {
+interface PaginationProps {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+}
+
+export default function SubmittedReports({ 
+    reports: initialReports, 
+    itPersonnel,
+    pagination 
+}: { 
+    reports: any[], 
+    itPersonnel: ITPersonnel[],
+    pagination: PaginationProps 
+}) {
     const [reports, setReports] = useState<Report[]>(initialReports);
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Add useEffect to update reports when initialReports changes (on page navigation)
+    useEffect(() => {
+        setReports(initialReports);
+    }, [initialReports]);
 
     const openModal = (report: Report) => {
         setSelectedReport(report);
@@ -92,6 +114,50 @@ export default function SubmittedReports({ reports: initialReports, itPersonnel 
         });
     };
 
+    const handlePageChange = (page: number) => {
+        router.get(`/admin_reports?page=${page}`, {}, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+            onSuccess: (page) => {
+                console.log('Page changed successfully to:', page);
+            },
+            onError: (errors) => {
+                console.error('Error changing page:', errors);
+            }
+        });
+    };
+
+    // Generate page numbers for pagination with dots
+    const getPageNumbers = () => {
+        const current = pagination.current_page;
+        const last = pagination.last_page;
+        const delta = 1;
+        const range = [];
+        const rangeWithDots = [];
+
+        for (let i = 1; i <= last; i++) {
+            if (i === 1 || i === last || (i >= current - delta && i <= current + delta)) {
+                range.push(i);
+            }
+        }
+
+        let prev = 0;
+        for (const i of range) {
+            if (prev) {
+                if (i - prev === 2) {
+                    rangeWithDots.push(prev + 1);
+                } else if (i - prev !== 1) {
+                    rangeWithDots.push('...');
+                }
+            }
+            rangeWithDots.push(i);
+            prev = i;
+        }
+
+        return rangeWithDots;
+    };
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'resolved': return 'bg-green-100 text-green-800';
@@ -108,10 +174,17 @@ export default function SubmittedReports({ reports: initialReports, itPersonnel 
 
                 {/* Header */}
                 <div className="flex justify-between items-center">
-                    <h2 className="text-2xl font-bold text-gray-900">Submitted Reports</h2>
-                    <div className="text-sm text-gray-500">
-                        {reports.length} reports total
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-900">Submitted Reports</h2>
+                        {pagination && (
+                            <p className="text-sm text-gray-600 mt-1">
+                                Showing  <span className="font-bold">{pagination.from}</span>  -  <span className="font-bold">{pagination.to}</span>  of  <span className="font-bold">{pagination.total}</span>  results
+                            </p>
+                        )}
                     </div>
+                    {/* <div className="text-sm text-gray-500">
+                        {pagination?.total || reports.length} reports total
+                    </div> */}
                 </div>
 
                 {/* Reports Table */}
@@ -200,6 +273,78 @@ export default function SubmittedReports({ reports: initialReports, itPersonnel 
                         </tbody>
                     </table>
                 </div>
+
+                {/* Pagination */}
+                {pagination && pagination.last_page > 1 && (
+                    <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6">
+                        <div className="flex flex-1 justify-between sm:hidden">
+                            <Button
+                                variant="outline"
+                                onClick={() => handlePageChange(pagination.current_page - 1)}
+                                disabled={pagination.current_page === 1}
+                                className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                                Previous
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => handlePageChange(pagination.current_page + 1)}
+                                disabled={pagination.current_page === pagination.last_page}
+                                className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                                Next
+                            </Button>
+                        </div>
+                        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                            <div>
+                                <p className="text-sm text-gray-700">
+                                    Page <span className="font-medium">{pagination.current_page}</span> of{' '}
+                                    <span className="font-medium">{pagination.last_page}</span>
+                                </p>
+                            </div>
+                            <div>
+                                <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => handlePageChange(pagination.current_page - 1)}
+                                        disabled={pagination.current_page === 1}
+                                        className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                                    >
+                                        <span className="sr-only">Previous</span>
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </Button>
+                                    
+                                    {/* Page numbers with dots */}
+                                    {getPageNumbers().map((page, index) => (
+                                        <Button
+                                            key={index}
+                                            variant={page === pagination.current_page ? "default" : "outline"}
+                                            onClick={() => typeof page === 'number' ? handlePageChange(page) : null}
+                                            disabled={page === '...'}
+                                            className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                                                page === pagination.current_page
+                                                    ? 'bg-[#770000] text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#770000]'
+                                                    : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                                            } ${page === '...' ? 'cursor-default' : ''}`}
+                                        >
+                                            {page}
+                                        </Button>
+                                    ))}
+
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => handlePageChange(pagination.current_page + 1)}
+                                        disabled={pagination.current_page === pagination.last_page}
+                                        className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                                    >
+                                        <span className="sr-only">Next</span>
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Report Details Modal */}
                 {isModalOpen && selectedReport && (

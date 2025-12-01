@@ -24,6 +24,7 @@ class SearchController extends Controller
 
         // Find articles where title/content/keyword match OR category matches
         $articles = Article::with(['category', 'user'])
+            ->where('article_status_id', 2) // Only approved articles
             ->when($q !== '', function ($query) use ($q) {
                 $like = '%' . $q . '%';
 

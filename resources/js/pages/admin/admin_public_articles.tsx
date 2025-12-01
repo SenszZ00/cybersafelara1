@@ -4,10 +4,14 @@ import { admin_public_articles } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowLeft } from 'lucide-react';
+import { Search, ArrowLeft, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Submitted Articles',
+        href: '/admin/admin_articles',
+    },
     {
         title: 'Public Articles',
         href: admin_public_articles().url,
@@ -33,6 +37,32 @@ export default function AdminPublicArticles({ articles: initialArticles }: { art
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredArticles, setFilteredArticles] = useState<Article[]>(initialArticles || []);
     const [hasSearched, setHasSearched] = useState(false);
+    const [showScrollTop, setShowScrollTop] = useState(false);
+
+    // Show/hide scroll to top button based on scroll position
+    useEffect(() => {
+        const handleScroll = () => {
+            // Show button when scrolled down 300px
+            if (window.scrollY > 300) {
+                setShowScrollTop(true);
+            } else {
+                setShowScrollTop(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        
+        // Cleanup
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Scroll to top function
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    };
 
     // Filter articles based on search term
     useEffect(() => {
@@ -96,7 +126,9 @@ export default function AdminPublicArticles({ articles: initialArticles }: { art
                         <div className="flex flex-col gap-4">
                             {/* Header with Back Button */}
                             <div className="flex justify-between items-center">
-                                <h1 className="text-2xl font-bold text-gray-900">Public Articles</h1>
+                                <div>
+                                    <h1 className="text-2xl font-bold text-gray-900">Public Articles</h1>
+                                </div>
                                 <Button 
                                     variant="outline" 
                                     onClick={handleBack}
@@ -167,6 +199,11 @@ export default function AdminPublicArticles({ articles: initialArticles }: { art
                                                 <span className="font-medium block">
                                                     {article.user?.username || 'Unknown User'}
                                                 </span>
+                                                {article.category && (
+                                                    <span className="text-gray-500">
+                                                        {article.category.name}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                         <time className="text-sm text-gray-500">
@@ -195,6 +232,19 @@ export default function AdminPublicArticles({ articles: initialArticles }: { art
                         </div>
                     )}
                 </div>
+
+                {/* Back to Top Button - Centered at bottom */}
+                {showScrollTop && (
+                    <div className="fixed bottom-6 left-4/7 transform -translate-x-1/2 z-50">
+                        <Button
+                            onClick={scrollToTop}
+                            className="w-12 h-12 rounded-full bg-[#992426] hover:bg-[#7a1d1f] text-white shadow-lg transition-all duration-300 hover:scale-110"
+                            size="icon"
+                        >
+                            <ChevronUp className="h-6 w-6" />
+                        </Button>
+                    </div>
+                )}
             </div>
         </AppLayout>
     );

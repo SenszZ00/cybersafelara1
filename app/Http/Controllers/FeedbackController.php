@@ -2,65 +2,36 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\Feedback;
-use App\Http\Requests\StoreFeedbackRequest;
-use App\Http\Requests\UpdateFeedbackRequest;
+use Inertia\Inertia;
 
 class FeedbackController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    // Remove the constructor and let the route handle middleware
+    // public function __construct()
+    // {
+    //     $this->middleware(['auth', 'verified']);
+    // }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(Request $request)
     {
-        //
-    }
+        // Validate input
+        $request->validate([
+            'subject' => 'required|string|max:255',
+            'content' => 'required|string',
+        ]);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreFeedbackRequest $request)
-    {
-        //
-    }
+        // Save feedback with the logged-in user's ID
+        Feedback::create([
+            'user_id' => auth()->id(),
+            'subject' => $request->subject,
+            'content' => $request->content,
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Feedback $feedback)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Feedback $feedback)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateFeedbackRequest $request, Feedback $feedback)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Feedback $feedback)
-    {
-        //
+        // For Inertia, return a redirect with flash message
+        return redirect()->back()->with([
+            'success' => 'Feedback submitted successfully!'
+        ]);
     }
 }
