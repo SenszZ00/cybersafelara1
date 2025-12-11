@@ -5,6 +5,7 @@ import { Head, usePage, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import { X, User, Clock, FileText, AlertCircle, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ReportFilter from '@/components/report-filter';
 
 interface ReportLogItem {
     log_id: number;
@@ -40,10 +41,17 @@ interface PaginationData {
     to: number;
 }
 
+interface Option {
+    id: number;
+    name: string;
+}
+
 // Define the page props type
 type PageProps = {
     logs: ReportLogItem[];
     pagination: PaginationData;
+    statuses?: Option[];
+    categories?: Option[];
 };
 
 // Type guard to check if props have the expected structure
@@ -72,6 +80,8 @@ export default function AdminReportLog() {
         from: 0,
         to: 0,
     };
+    const statuses = hasPageProps(props) ? (props.statuses || []) : [];
+    const categories = hasPageProps(props) ? (props.categories || []) : [];
     
     const [currentPage, setCurrentPage] = useState(pagination.current_page);
     const [selectedLog, setSelectedLog] = useState<ReportLogItem | null>(null);
@@ -156,6 +166,19 @@ export default function AdminReportLog() {
         return rangeWithDots;
     };
 
+    // Format timestamp to show both date and time
+    const formatTimestamp = (timestamp: string) => {
+        const date = new Date(timestamp);
+        return date.toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Report Log" />
@@ -173,6 +196,13 @@ export default function AdminReportLog() {
                     </div>
                 </div>
 
+                {/* Filter Section */}
+                <ReportFilter 
+                    statuses={statuses} 
+                    categories={categories}
+                    className="border-t pt-4"
+                />
+
                 {/* Reports Table */}
                 {logs.length === 0 ? (
                     <div className="text-center py-12 text-gray-500">
@@ -189,7 +219,7 @@ export default function AdminReportLog() {
                                         <th className="px-6 py-4 font-semibold">Incident Type</th>
                                         <th className="px-6 py-4 font-semibold">Resolution Details</th>
                                         <th className="px-6 py-4 font-semibold">IT Personnel</th>
-                                        <th className="px-6 py-4 font-semibold">Timestamp</th>
+                                        <th className="px-6 py-4 font-semibold">Date Submitted</th>
                                         <th className="px-6 py-4 font-semibold">Status</th>
                                     </tr>
                                 </thead>
@@ -213,7 +243,16 @@ export default function AdminReportLog() {
                                                 {log.it_personnel?.username || 'N/A'}
                                             </td>
                                             <td className="px-6 py-4 text-gray-600">
-                                                {new Date(log.timestamp).toLocaleDateString()}
+                                                <div className="flex flex-col">
+                                                    <span>{new Date(log.timestamp).toLocaleDateString()}</span>
+                                                    <span className="text-xs text-gray-500">
+                                                        {new Date(log.timestamp).toLocaleTimeString([], { 
+                                                            hour: '2-digit', 
+                                                            minute: '2-digit',
+                                                            hour12: true 
+                                                        })}
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(log.status)}`}>
@@ -330,7 +369,22 @@ export default function AdminReportLog() {
                                             Timestamp
                                         </span>
                                         <div className="font-medium text-gray-900 mt-1">
-                                            {new Date(selectedLog.timestamp).toLocaleString()}
+                                            <div className="flex flex-col">
+                                                <span>{new Date(selectedLog.timestamp).toLocaleDateString('en-US', {
+                                                    weekday: 'long',
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric'
+                                                })}</span>
+                                                <span className="text-sm text-gray-600">
+                                                    {new Date(selectedLog.timestamp).toLocaleTimeString('en-US', {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                        second: '2-digit',
+                                                        hour12: true
+                                                    })}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div>

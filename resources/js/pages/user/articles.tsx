@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Search, ChevronUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -36,6 +37,67 @@ export default function Articles({ articles: initialArticles, search: initialSea
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [filteredArticles, setFilteredArticles] = useState<Article[]>(initialArticles || []);
   const [hasSearched, setHasSearched] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Show/hide scroll to top button based on scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show button when scrolled down 300px
+      if (window.scrollY > 300) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    
+    // Cleanup
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Smooth scroll to top function
+  const scrollToTop = () => {
+    if (isScrolling) return;
+    
+    setIsScrolling(true);
+    const startPosition = window.scrollY;
+    const startTime = performance.now();
+    const duration = 800; // milliseconds - increased for smoother effect
+    
+    const easeInOutCubic = (t: number) => {
+      return t < 0.5 
+        ? 4 * t * t * t 
+        : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    };
+
+    const animateScroll = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeProgress = easeInOutCubic(progress);
+      
+      window.scrollTo(0, startPosition * (1 - easeProgress));
+      
+      if (progress < 1) {
+        requestAnimationFrame(animateScroll);
+      } else {
+        setIsScrolling(false);
+      }
+    };
+
+    requestAnimationFrame(animateScroll);
+  };
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Real-time filtering based on search term
   useEffect(() => {
@@ -204,6 +266,20 @@ export default function Articles({ articles: initialArticles, search: initialSea
             </div>
           )}
         </div>
+
+        {/* Back to Top Button - Centered at bottom */}
+        {showScrollTop && (
+          <div className="fixed bottom-6 left-4/7 transform -translate-x-1/2 z-50">
+            <Button
+              onClick={scrollToTop}
+              disabled={isScrolling}
+              className={`w-12 h-12 rounded-full bg-[#992426] text-white shadow-lg transition-all duration-300 ${isScrolling ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#7a1d1f] hover:scale-110'}`}
+              size="icon"
+            >
+              <ChevronUp className={`h-6 w-6 transition-transform duration-300 ${isScrolling ? 'animate-pulse' : ''}`} />
+            </Button>
+          </div>
+        )}
       </div>
     </AppLayout>
   );

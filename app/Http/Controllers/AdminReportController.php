@@ -25,14 +25,31 @@ class AdminReportController extends Controller
         ]);
 
         // Get all reports with relationships - ADD PAGINATION HERE
-        $reports = Report::with([
+        $query = Report::with([
             'user:id,username,college_department_id',
             'itPersonnel:id,username,college_department_id',  
             'status:id,name',
             'category:id,name' 
-        ])
-            ->latest()
-            ->paginate(20); // Changed from get() to paginate(20)
+        ]);
+
+        // Apply filters
+        if ($request->has('date') && $request->date) {
+            $query->whereDate('created_at', $request->date);
+        }
+
+        if ($request->has('status') && $request->status) {
+            $query->whereHas('status', function($q) use ($request) {
+                $q->where('name', $request->status);
+            });
+        }
+
+        if ($request->has('category') && $request->category) {
+            $query->whereHas('category', function($q) use ($request) {
+                $q->where('name', $request->category);
+            });
+        }
+
+        $reports = $query->latest()->paginate(20)->withQueryString();
 
         // Transform the paginated data
         $reports->getCollection()->transform(function ($report) {
@@ -68,6 +85,10 @@ class AdminReportController extends Controller
                 ];
             });
 
+        // Get all statuses and categories for filter dropdowns
+        $statuses = \App\Models\ReportStatus::select('id', 'name')->get();
+        $categories = \App\Models\ReportCategory::select('id', 'name')->get();
+
         // Debug: Check final data being sent
         \Log::info('Final data being sent to frontend:', [
             'reports_count' => $reports->count(),
@@ -94,7 +115,9 @@ class AdminReportController extends Controller
                 'total' => $reports->total(),
                 'from' => $reports->firstItem(),
                 'to' => $reports->lastItem(),
-            ]
+            ],
+            'statuses' => $statuses,
+            'categories' => $categories,
         ]);
     }
 

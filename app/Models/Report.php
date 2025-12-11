@@ -18,9 +18,10 @@ class Report extends Model
     protected $fillable = [
         'user_id',
         'it_personnel_id',
-        'report_category_id', // Updated from incident_category_id
+        'report_category_id',
         'anonymous_flag',
         'description',
+        'incident_date', // Changed from date_reported
         'attachment_mime',
         'attachment_name',
         'attachment_path',

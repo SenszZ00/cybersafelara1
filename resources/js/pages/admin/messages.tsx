@@ -47,6 +47,46 @@ export default function Messages({ feedbacks }: { feedbacks: any[] }) {
     setSelectedFeedback(null);
   };
 
+  // Format date and time separately
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return (
+      <div className="flex flex-col">
+        <span>{date.toLocaleDateString()}</span>
+        <span className="text-xs text-gray-500">
+          {date.toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true 
+          })}
+        </span>
+      </div>
+    );
+  };
+
+  // Format for modal with more detailed timestamp
+  const formatDetailedDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return (
+      <div className="flex flex-col">
+        <span>{date.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })}</span>
+        <span className="text-sm text-gray-600">
+          {date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+          })}
+        </span>
+      </div>
+    );
+  };
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Messages" />
@@ -69,7 +109,7 @@ export default function Messages({ feedbacks }: { feedbacks: any[] }) {
                 <th className="px-6 py-4 font-semibold">User</th>
                 <th className="px-6 py-4 font-semibold">Subject</th>
                 <th className="px-6 py-4 font-semibold">Message</th>
-                <th className="px-6 py-4 font-semibold">Submitted At</th>
+                <th className="px-6 py-4 font-semibold">Date Submitted</th>
                 <th className="px-6 py-4 font-semibold text-center">Actions</th>
               </tr>
             </thead>
@@ -82,7 +122,7 @@ export default function Messages({ feedbacks }: { feedbacks: any[] }) {
                     className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
                     onClick={() => openModal(f)}
                   >
-                    <td className="px-6 py-4 font-medium text-gray-900">{f.feedback_id}</td>
+                    <td className="px-6 py-4 font-mono text-gray-900">{f.feedback_id}</td>
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">
                         {f.user?.name ?? f.user?.username ?? `User ${f.user_id}`}
@@ -91,7 +131,9 @@ export default function Messages({ feedbacks }: { feedbacks: any[] }) {
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-900">{f.subject}</td>
                     <td className="px-6 py-4 text-gray-600 max-w-[420px] truncate">{f.content}</td>
-                    <td className="px-6 py-4 text-gray-600">{new Date(f.created_at).toLocaleString()}</td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {formatDateTime(f.created_at)}
+                    </td>
                     <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                       <Button 
                         variant="outline" 
@@ -153,7 +195,7 @@ export default function Messages({ feedbacks }: { feedbacks: any[] }) {
                   <div>
                     <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">Submitted</span>
                     <div className="font-medium text-gray-900 mt-1">
-                      {new Date(selectedFeedback.created_at).toLocaleString()}
+                      {formatDetailedDateTime(selectedFeedback.created_at)}
                     </div>
                   </div>
                 </div>

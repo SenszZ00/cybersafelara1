@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { admin_public_articles } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
@@ -38,6 +38,8 @@ export default function AdminPublicArticles({ articles: initialArticles }: { art
     const [filteredArticles, setFilteredArticles] = useState<Article[]>(initialArticles || []);
     const [hasSearched, setHasSearched] = useState(false);
     const [showScrollTop, setShowScrollTop] = useState(false);
+    const [isScrolling, setIsScrolling] = useState(false);
+    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Show/hide scroll to top button based on scroll position
     useEffect(() => {
@@ -56,13 +58,46 @@ export default function AdminPublicArticles({ articles: initialArticles }: { art
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Scroll to top function
+    // Smooth scroll to top function
     const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
+        if (isScrolling) return;
+        
+        setIsScrolling(true);
+        const startPosition = window.scrollY;
+        const startTime = performance.now();
+        const duration = 800; // milliseconds - increased for smoother effect
+        
+        const easeInOutCubic = (t: number) => {
+            return t < 0.5 
+                ? 4 * t * t * t 
+                : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        };
+
+        const animateScroll = (currentTime: number) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easeProgress = easeInOutCubic(progress);
+            
+            window.scrollTo(0, startPosition * (1 - easeProgress));
+            
+            if (progress < 1) {
+                requestAnimationFrame(animateScroll);
+            } else {
+                setIsScrolling(false);
+            }
+        };
+
+        requestAnimationFrame(animateScroll);
     };
+
+    // Clean up on unmount
+    useEffect(() => {
+        return () => {
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Filter articles based on search term
     useEffect(() => {
@@ -238,10 +273,11 @@ export default function AdminPublicArticles({ articles: initialArticles }: { art
                     <div className="fixed bottom-6 left-4/7 transform -translate-x-1/2 z-50">
                         <Button
                             onClick={scrollToTop}
-                            className="w-12 h-12 rounded-full bg-[#992426] hover:bg-[#7a1d1f] text-white shadow-lg transition-all duration-300 hover:scale-110"
+                            disabled={isScrolling}
+                            className={`w-12 h-12 rounded-full bg-[#992426] text-white shadow-lg transition-all duration-300 ${isScrolling ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#7a1d1f] hover:scale-110'}`}
                             size="icon"
                         >
-                            <ChevronUp className="h-6 w-6" />
+                            <ChevronUp className={`h-6 w-6 transition-transform duration-300 ${isScrolling ? 'animate-pulse' : ''}`} />
                         </Button>
                     </div>
                 )}

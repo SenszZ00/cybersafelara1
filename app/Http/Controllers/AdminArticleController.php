@@ -39,9 +39,26 @@ class AdminArticleController extends Controller
 
     public function index(Request $request)
     {
-        $articles = Article::with(['user:id,username', 'category:id,name', 'articleStatus:id,name'])
-            ->latest()
-            ->paginate(20);
+        $query = Article::with(['user:id,username', 'category:id,name', 'articleStatus:id,name']);
+
+        // Apply filters
+        if ($request->has('date') && $request->date) {
+            $query->whereDate('created_at', $request->date);
+        }
+
+        if ($request->has('status') && $request->status) {
+            $query->whereHas('articleStatus', function($q) use ($request) {
+                $q->where('name', $request->status);
+            });
+        }
+
+        if ($request->has('category') && $request->category) {
+            $query->whereHas('category', function($q) use ($request) {
+                $q->where('name', $request->category);
+            });
+        }
+
+        $articles = $query->latest()->paginate(20)->withQueryString();
 
         $articles->getCollection()->transform(function ($article) {
             return [
@@ -58,6 +75,10 @@ class AdminArticleController extends Controller
             ];
         });
 
+        // Get all statuses and categories for filter dropdowns
+        $statuses = ArticleStatus::select('id', 'name')->get();
+        $categories = ArticleCategory::select('id', 'name')->get();
+
         return Inertia::render('admin/admin_articles', [
             'articles' => $articles->items(),
             'pagination' => [
@@ -67,7 +88,9 @@ class AdminArticleController extends Controller
                 'total' => $articles->total(),
                 'from' => $articles->firstItem(),
                 'to' => $articles->lastItem(),
-            ]
+            ],
+            'statuses' => $statuses,
+            'categories' => $categories,
         ]);
     }
 

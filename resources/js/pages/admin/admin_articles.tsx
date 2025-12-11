@@ -5,6 +5,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
+import ArticleFilter from '@/components/article-filter';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -34,12 +35,21 @@ interface PaginationProps {
   to: number;
 }
 
+interface Option {
+  id: number;
+  name: string;
+}
+
 export default function SubmittedArticles({ 
   articles, 
-  pagination 
+  pagination,
+  statuses = [],
+  categories = []
 }: { 
   articles: any[],
-  pagination: PaginationProps 
+  pagination: PaginationProps,
+  statuses?: Option[],
+  categories?: Option[]
 }) {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -91,13 +101,22 @@ export default function SubmittedArticles({
     });
   };
 
-  const formatDate = (dateString: string | null | undefined) => {
+  // Format date to show both date and time
+  const formatDateTime = (dateString: string | null | undefined) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    const date = new Date(dateString);
+    return (
+      <div className="flex flex-col">
+        <span>{date.toLocaleDateString()}</span>
+        <span className="text-xs text-gray-500">
+          {date.toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true 
+          })}
+        </span>
+      </div>
+    );
   };
 
   const getPublishedDate = (article: Article) => {
@@ -161,6 +180,13 @@ export default function SubmittedArticles({
           </div>
         </div>
 
+        {/* Filter Section */}
+        <ArticleFilter 
+          statuses={statuses} 
+          categories={categories}
+          className="border-t pt-4"
+        />
+
         {/* Table Section */}
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm text-left">
@@ -187,7 +213,9 @@ export default function SubmittedArticles({
                     <td className="px-6 py-4 font-medium text-gray-900">{article.title}</td>
                     <td className="px-6 py-4 text-gray-600">{article.category || '-'}</td>
                     <td className="px-6 py-4 text-gray-600">{article.user_id}</td>
-                    <td className="px-6 py-4 text-gray-600">{formatDate(article.created_at)}</td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {formatDateTime(article.created_at)}
+                    </td>
                     <td className="px-6 py-4 capitalize">
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         article.status === 'approved'
@@ -200,7 +228,7 @@ export default function SubmittedArticles({
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-600">
-                      {formatDate(getPublishedDate(article))}
+                      {formatDateTime(getPublishedDate(article))}
                     </td>
                     <td className="px-6 py-4 text-center flex justify-center gap-2" onClick={(e) => e.stopPropagation()}>
                       <Button
@@ -342,7 +370,9 @@ export default function SubmittedArticles({
                   </div>
                   <div>
                     <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">Submitted</span>
-                    <div className="font-medium text-gray-900 mt-1">{formatDate(selectedArticle.created_at)}</div>
+                    <div className="font-medium text-gray-900 mt-1">
+                      {formatDateTime(selectedArticle.created_at)}
+                    </div>
                   </div>
                 </div>
 
@@ -358,7 +388,9 @@ export default function SubmittedArticles({
                 {selectedArticle.status === 'approved' && (
                   <div className="text-sm">
                     <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">Published on</span>
-                    <div className="font-medium text-gray-900 mt-1">{formatDate(selectedArticle.updated_at)}</div>
+                    <div className="font-medium text-gray-900 mt-1">
+                      {formatDateTime(selectedArticle.updated_at)}
+                    </div>
                   </div>
                 )}
               </div>

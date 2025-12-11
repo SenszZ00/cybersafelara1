@@ -23,7 +23,9 @@ return new class extends Migration {
 
             $table->boolean('anonymous_flag')->default(false);
             $table->text('description');
-
+            
+            $table->date('incident_date')->nullable(); // Changed: Date when the incident happened
+            
             // File attachment metadata (instead of BLOB)
             $table->string('attachment_mime', 100)->nullable();
             $table->string('attachment_name', 255)->nullable();

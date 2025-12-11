@@ -21,21 +21,50 @@ class ArticleController extends Controller
 
     public function update(Request $request, Article $article) {}
 
-    public function destroy(Article $article) {}
+    // Add to ArticleController.php
+    public function destroy($id)
+    {
+        $user = auth()->user();
+        
+        // Find the article belonging to this user
+        $article = Article::where('article_id', $id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+        
+        // Delete the article
+        $article->delete();
+        
+        return redirect()->route('my_articles')
+            ->with('success', 'Article deleted successfully.');
+    }
 
 
     /**
      * Display all articles created by the logged in user
      */
-    public function myArticles()
+    public function myArticles(Request $request)
     {
-        $userId = auth()->id(); // ✅ safer than auth()->user()->user_id
-
-        $articles = DB::table('articles')
+        $userId = auth()->id();
+        
+        $query = DB::table('articles')
             ->leftJoin('article_categories', 'articles.category_id', '=', 'article_categories.id')
             ->leftJoin('article_statuses', 'articles.article_status_id', '=', 'article_statuses.id')
-            ->where('articles.user_id', $userId)
-            ->select(
+            ->where('articles.user_id', $userId);
+
+        // Apply filters
+        if ($request->has('date') && $request->date) {
+            $query->whereDate('articles.created_at', $request->date);
+        }
+
+        if ($request->has('status') && $request->status) {
+            $query->where('article_statuses.name', $request->status);
+        }
+
+        if ($request->has('category') && $request->category) {
+            $query->where('article_categories.name', $request->category);
+        }
+
+        $articles = $query->select(
                 'articles.article_id',
                 'articles.title',
                 'article_categories.name as category',
@@ -45,10 +74,17 @@ class ArticleController extends Controller
                 'articles.content'
             )
             ->orderBy('articles.created_at', 'desc')
-            ->get();
+            ->paginate(20)
+            ->withQueryString();
 
+        // Get all statuses and categories for filter dropdowns
+        $statuses = \App\Models\ArticleStatus::select('id', 'name')->get();
+        $categories = \App\Models\ArticleCategory::select('id', 'name')->get();
+        
         return Inertia::render('user/my_articles', [
-            'articles' => $articles
+            'articles' => $articles,
+            'statuses' => $statuses,
+            'categories' => $categories,
         ]);
     }
 

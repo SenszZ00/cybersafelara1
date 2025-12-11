@@ -6,6 +6,7 @@ import { Head, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { User, Users, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import ReportFilter from '@/components/report-filter';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -48,14 +49,23 @@ interface PaginationProps {
     to: number;
 }
 
+interface Option {
+    id: number;
+    name: string;
+}
+
 export default function SubmittedReports({ 
     reports: initialReports, 
     itPersonnel,
-    pagination 
+    pagination,
+    statuses = [],
+    categories = []
 }: { 
     reports: any[], 
     itPersonnel: ITPersonnel[],
-    pagination: PaginationProps 
+    pagination: PaginationProps,
+    statuses?: Option[],
+    categories?: Option[]
 }) {
     const [reports, setReports] = useState<Report[]>(initialReports);
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
@@ -167,6 +177,23 @@ export default function SubmittedReports({
         }
     };
 
+    // Format date to show both date and time
+    const formatDateTime = (dateString: string) => {
+        const date = new Date(dateString);
+        return (
+            <div className="flex flex-col">
+                <span>{date.toLocaleDateString()}</span>
+                <span className="text-xs text-gray-500">
+                    {date.toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        hour12: true 
+                    })}
+                </span>
+            </div>
+        );
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Submitted Reports" />
@@ -182,10 +209,14 @@ export default function SubmittedReports({
                             </p>
                         )}
                     </div>
-                    {/* <div className="text-sm text-gray-500">
-                        {pagination?.total || reports.length} reports total
-                    </div> */}
                 </div>
+
+                {/* Filter Section */}
+                <ReportFilter 
+                    statuses={statuses} 
+                    categories={categories}
+                    className="border-t pt-4"
+                />
 
                 {/* Reports Table */}
                 <div className="overflow-x-auto">
@@ -224,7 +255,7 @@ export default function SubmittedReports({
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-gray-600">
-                                            {new Date(report.created_at).toLocaleDateString()}
+                                            {formatDateTime(report.created_at)}
                                         </td>
                                         <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                                             {/* Assign/Reassign Dropdown - Always show for admin */}
@@ -381,7 +412,16 @@ export default function SubmittedReports({
                                     <div>
                                         <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">Submitted</span>
                                         <div className="font-medium text-gray-900 mt-1">
-                                            {new Date(selectedReport.created_at).toLocaleString()}
+                                            <div className="flex flex-col">
+                                                <span>{new Date(selectedReport.created_at).toLocaleDateString()}</span>
+                                                <span className="text-sm text-gray-600">
+                                                    {new Date(selectedReport.created_at).toLocaleTimeString([], { 
+                                                        hour: '2-digit', 
+                                                        minute: '2-digit',
+                                                        hour12: true 
+                                                    })}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div>

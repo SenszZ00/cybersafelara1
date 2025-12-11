@@ -20,7 +20,6 @@ class ReportCategorySeeder extends Seeder
             'Email Issue',
             'Account Access',
             'Security Concern',
-            'Other',
         ];
 
         foreach ($categories as $name) {

@@ -14,6 +14,7 @@ use App\Http\Controllers\ReportCategoryController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ReportLogController;
 use App\Http\Controllers\ReportStatusController;
+use App\Http\Controllers\ReportController;
 use App\Models\Article;
 use Inertia\Inertia;
 
@@ -114,10 +115,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('my_articles');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::post('/articles/store', [ArticleController::class, 'storeUserArticle'])
-        ->name('articles.store');
-});
+// Route::middleware(['auth', 'verified'])->group(function () {
+//     Route::post('/articles/store', [ArticleController::class, 'storeUserArticle'])
+//         ->name('articles.store');
+// });
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -131,6 +132,9 @@ Route::post('/articles/store', [ArticleController::class, 'storeUserArticle'])
     ->middleware(['auth', 'verified'])
     ->name('articles.store');
 
+Route::delete('/articles/{id}', [ArticleController::class, 'destroy'])
+    ->middleware(['auth', 'verified'])
+    ->name('articles.destroy');
 
 Route::middleware(['auth','verified'])->group(function () {
     Route::get('/my_reports', [UserReportController::class, 'MyReports'])->name('my_reports');
@@ -142,6 +146,10 @@ Route::middleware(['auth','verified'])->group(function () {
     // POST endpoint the form will call
     Route::post('/user/reports/store', [UserReportController::class, 'store'])
         ->name('user.reports.store');
+
+    // delete a report
+    Route::delete('/user/reports/{id}', [UserReportController::class, 'destroy'])
+        ->name('user.reports.destroy');
 
     // view a single report
     Route::get('/user/view-report/{id}', [UserReportController::class, 'viewReport'])
@@ -197,7 +205,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // IT Assigned Reports
-    Route::get('it_reports', [ReportLogController::class, 'assignedReports'])
+    Route::get('it_reports', [ReportController::class, 'assignedReports'])
         ->name('it_reports');
 
     // IT Report Log page

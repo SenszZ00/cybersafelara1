@@ -36,7 +36,7 @@ export default function FeedbackWidget() {
             {/* Floating Button */}
             <button
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 right-6 w-14 h-14 bg-[#770000] hover:bg-[#992426] text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 z-50 focus:outline-none focus:ring-2 focus:ring-[#770000] focus:ring-offset-2"
+                className="fixed bottom-6 right-6 w-14 h-14 bg-[#770000] hover:bg-red-800 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 z-50 focus:outline-none focus:ring-2 focus:ring-[#770000] focus:ring-offset-2"
                 aria-label="Provide Feedback"
             >
                 <MessageCircle className="w-6 h-6" />
@@ -133,7 +133,7 @@ export default function FeedbackWidget() {
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-[#770000] rounded-md hover:bg-[#992426] disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#770000] focus:ring-offset-2 transition-colors duration-200"
+                                    className="px-4 py-2 text-sm font-medium text-white bg-[#770000] rounded-md hover:bg-red-800 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#770000] focus:ring-offset-2 transition-colors duration-200"
                                 >
                                     {processing ? 'Sending...' : 'Send Feedback'}
                                 </button>

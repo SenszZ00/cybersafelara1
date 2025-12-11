@@ -17,13 +17,28 @@ class AdminReportLogController extends Controller
         \Log::info('AdminReportLogController index method called');
 
         // Get all report logs with relationships
-        $logs = ReportLog::with([
+        $query = ReportLog::with([
             'report:id,report_id',
             'category:id,name',
             'user:id,username' // IT personnel info
-        ])
-        ->latest()
-        ->paginate(20); // Paginate with 20 items per page
+        ]);
+
+        // Apply filters
+        if ($request->has('date') && $request->date) {
+            $query->whereDate('created_at', $request->date);
+        }
+
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('category') && $request->category) {
+            $query->whereHas('category', function($q) use ($request) {
+                $q->where('name', $request->category);
+            });
+        }
+
+        $logs = $query->latest()->paginate(20)->withQueryString();
 
         // Transform the paginated data
         $logs->getCollection()->transform(function ($log) {
@@ -44,6 +59,10 @@ class AdminReportLogController extends Controller
                 ] : null,
             ];
         });
+
+        // Get all statuses and categories for filter dropdowns
+        $statuses = \App\Models\ReportStatus::select('id', 'name')->get();
+        $categories = \App\Models\ReportCategory::select('id', 'name')->get();
 
         // Debug: Check final data being sent
         \Log::info('Admin Report Logs data being sent to frontend:', [
@@ -68,7 +87,9 @@ class AdminReportLogController extends Controller
                 'total' => $logs->total(),
                 'from' => $logs->firstItem(),
                 'to' => $logs->lastItem(),
-            ]
+            ],
+            'statuses' => $statuses,
+            'categories' => $categories,
         ]);
     }
 

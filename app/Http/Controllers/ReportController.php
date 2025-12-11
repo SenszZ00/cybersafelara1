@@ -4,100 +4,123 @@ namespace App\Http\Controllers;
 
 use App\Models\Report;
 use App\Models\ReportLog;
-use App\Http\Requests\StoreReportRequest;
-use App\Http\Requests\UpdateReportRequest;
 use App\Models\ReportStatus;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class ReportController extends Controller
 {
-    public function index()
-    {
-        //
-    }
-
-    public function create()
-    {
-        //
-    }
-
     /**
-     * Store a newly created report.
+     * Fetch paginated reports assigned to the logged-in IT personnel
      */
-    public function store(StoreReportRequest $request)
-{
-    $report = Report::create([
-        'user_id'            => auth()->id(),
-        'report_category_id' => $request->report_category_id, // Changed from incident_type
-        'description'        => $request->description,
-        'anonymous_flag'     => $request->anonymous_flag ?? false,
-        'attachment_mime'    => null, // Handle file uploads later
-        'attachment_name'    => null,
-        'attachment_path'    => null,
-        'report_status_id'   => 1,
-        'it_personnel_id'    => null, // Will be auto-assigned
-    ]);
-
-        // Log entry in report_logs
-        ReportLog::create([
-            'report_id'         => $report->report_id,
-            'it_personnel_id'   => null, // no IT assigned yet
-            'incident_type'     => $report->incident_type,
-            'status'            => 'pending', // initial status
-            'resolution_details'=> 'Report submitted by user.',
-        ]);
-
-        return back()->with('success', 'Report successfully submitted.');
-    }
-
-    /**
-     * Update the specified report.
-     */
-    
-    public function show(Report $report)
+    public function assignedReports(Request $request)
     {
-        //
-    }
+        $user = auth()->user();
 
-    public function edit(Report $report)
-    {
-        //
-    }
+        // Fetch paginated reports with related status and category
+        $query = Report::where('it_personnel_id', $user->id)
+            ->with(['status', 'category', 'user' => function($query) {
+                $query->select('id', 'username');
+            }]);
 
-    public function destroy(Report $report)
-    {
-        //
-    }
+        // Apply filters
+        if ($request->has('date') && $request->date) {
+            $query->whereDate('created_at', $request->date);
+        }
 
-    /**
-     * Fetch reports assigned to the logged-in IT personnel
-     */
-    public function assignedReports()
-{
-    $user = auth()->user();
+        if ($request->has('status') && $request->status) {
+            $query->whereHas('status', function($q) use ($request) {
+                $q->where('name', $request->status);
+            });
+        }
 
-    // DEBUG
-    \Log::info('🔵 FETCHING ASSIGNED REPORTS', ['it_personnel_id' => $user->id]);
+        if ($request->has('category') && $request->category) {
+            $query->whereHas('category', function($q) use ($request) {
+                $q->where('name', $request->category);
+            });
+        }
 
-    // Fetch reports with related status
-    $reports = Report::where('it_personnel_id', $user->id)
-        ->with('status')
-        ->latest()
-        ->get([
-            'report_id',
-            'user_id',
-            'incident_type',
-            'description',
-            'attachments',
-            'created_at',
-            'report_status_id',
-        ]);
+        $reports = $query->latest()
+            ->paginate(10, [
+                'report_id',
+                'user_id',
+                'report_category_id',
+                'description',
+                'attachments',
+                'attachment_name',
+                'attachment_mime',
+                'created_at',
+                'updated_at',
+                'report_status_id',
+                'anonymous_flag',
+            ])
+            ->withQueryString();
+
+        // Transform the paginated data for Inertia
+        $reports->getCollection()->transform(function ($report) {
+            return [
+                'report_id' => $report->report_id,
+                'user_id' => $report->user_id,
+                'user' => $report->user ? ['username' => $report->user->username] : null,
+                'report_category_id' => $report->report_category_id,
+                'description' => $report->description,
+                'attachments' => $report->attachments,
+                'attachment_name' => $report->attachment_name,
+                'attachment_mime' => $report->attachment_mime,
+                'created_at' => $report->created_at,
+                'updated_at' => $report->updated_at,
+                'report_status_id' => $report->report_status_id,
+                'status' => $report->status ? ['name' => $report->status->name] : null,
+                'category' => $report->category ? [
+                    'id' => $report->category->id,
+                    'name' => $report->category->name
+                ] : null,
+                'anonymous_flag' => $report->anonymous_flag,
+            ];
+        });
 
         // Fetch all status options for dropdown
         $statuses = ReportStatus::all(['id', 'name']);
+        $categories = \App\Models\ReportCategory::select('id', 'name')->get();
 
-        return inertia('it/it-reports', [
+        return Inertia::render('it/it-reports', [
             'reports'  => $reports,
             'statuses' => $statuses,
+            'categories' => $categories,
         ]);
     }
+
+    /**
+     * Update report status with resolution details
+     */
+    public function updateStatus(Request $request, $reportId)
+    {
+        $request->validate([
+            'report_status_id' => 'required|exists:report_statuses,id',
+            'resolution_details' => 'nullable|string|max:1000',
+        ]);
+
+        $report = Report::findOrFail($reportId);
+        
+        // Update report status
+        $report->update([
+            'report_status_id' => $request->report_status_id,
+            'updated_at' => now(),
+        ]);
+
+        // Create a log entry for the status update
+        ReportLog::create([
+            'report_id' => $report->report_id,
+            'it_personnel_id' => Auth::id(),
+            'report_category_id' => $report->report_category_id,
+            'status' => $report->status->name,
+            'resolution_details' => $request->resolution_details ?: 'Status updated to ' . $report->status->name,
+            'created_at' => now(),
+        ]);
+
+        return back()->with('success', 'Report status updated successfully.');
+    }
+
+    // ... other methods
 }
